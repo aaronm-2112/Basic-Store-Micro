@@ -6,9 +6,9 @@ exports.up = (pgm) => {
   pgm.sql(`
   CREATE TABLE users (
         id SERIAL PRIMARY KEY,
-        username VARCHAR(30) NOT NULL UNIQUE, 
-        password VARCHAR(30) NOT NULL,
-        email VARCHAR(50) NOT NULL UNIQUE
+        username VARCHAR(30) NOT NULL UNIQUE CHECK( LENGTH (username) > 0 ), 
+        password VARCHAR NOT NULL CHECK( LENGTH (password) > 0),
+        email VARCHAR(50) NOT NULL UNIQUE CHECK( LENGTH (email) > 0)
         );
     `);
 };
