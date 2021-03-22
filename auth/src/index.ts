@@ -1,33 +1,46 @@
 import { app } from "./app";
 import { Pool } from "./pool";
 
+// TODO: Change default PG_USER env variable
+// TODO: FIx two problems:
+//       1. Connect to an auth-micro database that may not always exist
+//       2. Run the migrations if there is no table
 (async () => {
-  if (!process.env.HOST) {
+  if (!process.env.PG_HOST) {
     throw new Error("No host detected");
   }
 
-  if (!process.env.DATABASE) {
+  if (!process.env.PG_DATABASE) {
     throw new Error("No database detected");
   }
 
-  if (!process.env.PASSWORD) {
+  if (!process.env.PG_PASSWORD) {
     throw new Error("No password detected");
   }
 
-  const PORT = process.env.port || 3000;
+  if (!process.env.PG_PORT) {
+    throw new Error("No port detected");
+  }
+
+  if (!process.env.JWT_KEY) {
+    throw new Error("No jwt secret key defined");
+  }
+
+  let PG_PORT = process.env.PG_PORT;
 
   // connect to postgres using the pool singleton
   const connectionResult = await Pool.connect({
-    host: process.env.HOST,
-    port: 5432,
-    database: process.env.DATABASE,
-    password: process.env.PASSWORD,
+    host: process.env.PG_HOST,
+    port: parseInt(PG_PORT),
+    database: "postgres",
+    password: process.env.PG_PASSWORD,
+    user: process.env.PG_USER,
   });
 
   // check if the connection was successful
   if (connectionResult.rows) {
-    app.listen(PORT, () => {
-      console.log(`Listening on port ${PORT}`);
+    app.listen(3000, () => {
+      console.log(`Listening on port 3000`);
     });
   } else {
     throw new Error("Bad connection");
