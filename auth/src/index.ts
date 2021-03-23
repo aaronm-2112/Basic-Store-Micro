@@ -1,10 +1,11 @@
 import { app } from "./app";
 import { Pool } from "./pool";
+import migrate from "node-pg-migrate";
 
 // TODO: Change default PG_USER env variable
-// TODO: FIx two problems:
+// TODO: Fix two problems:
 //       1. Connect to an auth-micro database that may not always exist
-//       2. Run the migrations if there is no table
+//       2. Run the migrations if there is no table [done]
 (async () => {
   if (!process.env.PG_HOST) {
     throw new Error("No host detected");
@@ -39,6 +40,34 @@ import { Pool } from "./pool";
 
   // check if the connection was successful
   if (connectionResult.rows) {
+    // check if the tables in the auth database have been set up or if we need to run a migration
+    const runMigration = await Pool.query(
+      `SELECT EXISTS (
+      SELECT FROM pg_tables 
+      WHERE schemaname='public' AND tablename = 'users'
+    )`,
+      []
+    );
+
+    if (runMigration) {
+      // run the migrations
+      await migrate({
+        schema: "public",
+        direction: "up",
+        log: () => {},
+        noLock: true,
+        dir: "migrations",
+        databaseUrl: {
+          host: process.env.PG_HOST,
+          port: parseInt(PG_PORT),
+          database: "postgres",
+          user: process.env.PG_USER,
+          password: process.env.PG_PASSWORD,
+        },
+        migrationsTable: "pgmigrations", // experiment with this
+        count: 1,
+      });
+    }
     app.listen(3000, () => {
       console.log(`Listening on port 3000`);
     });
