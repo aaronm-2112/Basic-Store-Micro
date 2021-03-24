@@ -69,7 +69,7 @@ import migrate from "node-pg-migrate";
       });
     }
     app.listen(3000, () => {
-      console.log(`Listening on port 3000`);
+      console.log(`Listening on port 3006`);
     });
   } else {
     throw new Error("Bad connection");

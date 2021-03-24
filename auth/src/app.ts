@@ -18,7 +18,7 @@ app.use(
 app.use(signupRouter);
 
 app.get("/", (req: Request, res: Response) => {
-  res.send("Root routes");
+  res.send("Root routes fun - er - er er");
 });
 
 export { app };

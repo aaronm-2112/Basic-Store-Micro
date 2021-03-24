@@ -49,7 +49,7 @@ router.post(
         jwt: createJWT(user.username, user.email),
       };
 
-      // send back a 201
+      // send back a 201 k
       return res.status(201).send(user);
     } catch (e) {
       console.error(e);
