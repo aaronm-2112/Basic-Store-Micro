@@ -1,8 +1,5 @@
 import { Pool, PoolConfig } from "pg";
 
-// IMP: https://github.com/brianc/node-postgres/tree/master/packages/pg-pool
-//      Need to pass information for a non-local postgres instance in through a config object
-//      So when postgres is running in a separate container this will need modificaiton
 export class PoolSingleton {
   private _pool: Pool | undefined = undefined;
   connect(config: PoolConfig) {
