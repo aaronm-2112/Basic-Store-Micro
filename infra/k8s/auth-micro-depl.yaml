@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-micro-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-micro
+  template:
+    metadata:
+      labels:
+        app: auth-micro
+    spec:
+      containers:
+        - name: auth-micro
+          image: aaronpazm/auth-micro
+          env:
+            - name: PG_HOST
+              value: auth-postgres-cluster-ip-service
+            - name: PG_PORT
+              value: "5432"
+            - name: PG_DATABASE
+              value: auth
+            - name: PG_USER
+              value: postgres
+            - name: PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: pgpassword
+                  key: PG_PASSWORD
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwtkey
+                  key: JWT_KEY

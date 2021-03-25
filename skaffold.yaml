@@ -1,0 +1,19 @@
+apiVersion: skaffold/v2beta12
+kind: Config
+deploy:
+  kubectl:
+    manifests:
+      - infra/k8s/auth-micro-depl.yaml
+      - infra/k8s/auth-cluster-ip-service.yaml
+build:
+  local:
+    push: false
+  artifacts:
+    - image: aaronpazm/auth-micro
+      context: auth # the folder that holds our app we make an image form
+      docker:
+        dockerfile: Dockerfile
+      sync: # IMP: Don't add databases or PVCs to Skaffold because they will automatically be shut down when you exit dev mode. This loses the data
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
