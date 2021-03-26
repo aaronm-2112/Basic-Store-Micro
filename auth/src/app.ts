@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import { signupRouter } from "./routes/signup";
+import { signinRouter } from "./routes/signin";
 import cookieSession from "cookie-session";
 
 const app = express();
@@ -24,6 +25,7 @@ app.use(
 );
 
 app.use(signupRouter);
+app.use(signinRouter);
 
 app.get("/", (req: Request, res: Response) => {
   res.send("Root routes fun");

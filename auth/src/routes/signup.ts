@@ -1,7 +1,6 @@
 import express, { Request, Response } from "express";
 import { validationResult, body } from "express-validator";
 import { createJWT } from "../services/jwt";
-
 import { AuthRepo } from "../repos/auth-repo";
 const router = express.Router();
 
@@ -10,12 +9,12 @@ router.post(
   [
     body("username")
       .trim()
-      .isLength({ max: 30 })
+      .isLength({ max: 30, min: 1 })
       .withMessage("Username is not valid"),
     body("email").isEmail().withMessage("Email must be valid"),
     body("password")
       .trim()
-      .isLength({ max: 30 })
+      .isLength({ max: 30, min: 1 })
       .notEmpty()
       .withMessage("Password is not valid"),
   ],
