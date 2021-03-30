@@ -24,7 +24,7 @@ router.post(
     if (!errors.isEmpty()) {
       //  if not send back a 400
       errors.array().forEach((element) => {
-        console.error(element);
+        //console.error(element);
       });
       return res.sendStatus(400);
     }
