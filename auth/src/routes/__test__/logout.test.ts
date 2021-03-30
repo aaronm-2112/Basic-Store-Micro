@@ -1,7 +1,7 @@
 import request from "supertest";
+import jwt from "jsonwebtoken";
 import { app } from "../../app";
 import Context from "../../test/context";
-import jwt from "jsonwebtoken";
 import { AuthRepo } from "../../repos/auth-repo";
 
 let context: Context;
@@ -24,9 +24,11 @@ interface sessionJWT {
   email: string;
   iat: number;
 }
-async function decodeCookie(response: request.Response): Promise<sessionJWT> {
+async function decodeCookie(
+  response: request.Response
+): Promise<sessionJWT | null> {
   // console.log(response.headers);
-  // console.log(response.headers["set-cookie"][0]); // TOOO: Make dynamic
+  console.log(response.headers["set-cookie"][0]); // TOOO: Make dynamic
   // extract the cookie from the set cookie header
   let cookieEndIndex = 0;
 
@@ -45,14 +47,18 @@ async function decodeCookie(response: request.Response): Promise<sessionJWT> {
   // decode the cookie b/c it is set in base 64
   let buff = Buffer.from(base64cookie, "base64");
   let JSONCookie = buff.toString("ascii");
-  //console.log(JSONCookie);
+
+  // check if the cookie's value is null -- this happens when we
+  if (!JSONCookie) {
+    return null;
+  }
 
   // parse the JSON value of the JSON stringified and still as of yet encrypted cookie
   let parsedCoookie = JSON.parse(JSONCookie);
   //console.log(parsedCoookie);
 
   // decrypt the jwt portion of the cookie using the secret used to encode it
-  let token = (await jwt.verify(parsedCoookie.jwt, "test-secret")) as {
+  let token = jwt.verify(parsedCoookie.jwt, "test-secret") as {
     username: string;
     email: string;
     iat: number;
@@ -67,8 +73,8 @@ const username = "test",
   password = "1234",
   email = "test@test.com";
 
-it("Should return a 200 on successful sign in", async () => {
-  // create the user
+it("Clears the current session", async () => {
+  // create a user
   await AuthRepo.create(username, email, password);
 
   // login with the user
@@ -79,64 +85,14 @@ it("Should return a 200 on successful sign in", async () => {
       password,
     })
     .expect(200);
-});
 
-it("Should create a session for the user on successful sign in", async () => {
-  // create the user
-  await AuthRepo.create(username, email, password);
+  // pass the cookie into the logout route
+  const logoutResponse = await request(app)
+    .post("/api/auth/logout")
+    .set("Cookie", response.get("Set-Cookie"))
+    .send();
 
-  const response = await request(app)
-    .post("/api/auth/signin")
-    .send({
-      email,
-      password,
-    })
-    .expect(200);
-
-  // get the jwt out of the cookie set in the response headers
-  const token = await decodeCookie(response);
-
-  // check the contents of the jwt to ensure they were set correctly
-  expect(token["username"]).toBe("test");
-  expect(token["email"]).toBe("test@test.com");
-});
-
-it("Should return a 400 when given invalid credentials", async () => {
-  await request(app)
-    .post("/api/auth/signin")
-    .send({
-      email: "",
-      password,
-    })
-    .expect(400);
-
-  await request(app)
-    .post("/api/auth/signin")
-    .send({
-      email,
-      password: "",
-    })
-    .expect(400);
-
-  await request(app)
-    .post("/api/auth/signin")
-    .send({
-      email: "tttttttttttttttttttttttttttttttt",
-      password,
-    })
-    .expect(400);
-
-  await request(app)
-    .post("/api/auth/signin")
-    .send({
-      password,
-    })
-    .expect(400);
-
-  await request(app)
-    .post("/api/auth/signin")
-    .send({
-      email,
-    })
-    .expect(400);
+  // check that the session cookie has the JWT property set as undefiend
+  const jwt = await decodeCookie(logoutResponse);
+  expect(jwt).toBe(null);
 });
