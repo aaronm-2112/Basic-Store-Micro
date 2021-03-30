@@ -8,7 +8,7 @@ exports.up = (pgm) => {
         id SERIAL PRIMARY KEY,
         username VARCHAR(30) NOT NULL UNIQUE CHECK( LENGTH (username) > 0 ), 
         password VARCHAR NOT NULL CHECK( LENGTH (password) > 0),
-        email VARCHAR(50) NOT NULL UNIQUE CHECK( LENGTH (email) > 0)
+        email VARCHAR(30) NOT NULL UNIQUE CHECK( LENGTH (email) > 0)
         );
     `);
 };
