@@ -1,9 +1,15 @@
+import { ErrorSerializer } from "./serializers/error-serializer";
+
 export abstract class CustomError extends Error {
-  constructor(msg: string) {
-    super();
-    this.message = msg;
+  abstract statusCode: number;
+  abstract es: ErrorSerializer;
+
+  constructor(msg?: string) {
+    super(msg || "");
     Object.setPrototypeOf(this, Error.prototype);
   }
 
-  abstract statusCode: number;
+  serializeErrors() {
+    return this.es.serializeErrors();
+  }
 }

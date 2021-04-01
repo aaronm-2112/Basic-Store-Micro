@@ -3,7 +3,8 @@ import "express-async-errors";
 import { validationResult, body } from "express-validator";
 import { createJWT } from "../services/jwt";
 import { AuthRepo } from "../repos/auth-repo";
-import { ValidationError } from "../errors/validation-error";
+import { InputValidationError } from "../errors/validation-error";
+import { ClientError } from "../errors/client-error";
 const router = express.Router();
 
 router.post(
@@ -26,9 +27,10 @@ router.post(
     if (!errors.isEmpty()) {
       //  if not send back a 400
       errors.array().forEach((element) => {
-        //console.error(element);
-      });
-      throw new ValidationError("Bad parameters boi");
+        console.error(element);
+      }); // changes listen
+
+      throw new InputValidationError(errors);
       //return res.sendStatus(500);
     }
 
@@ -39,7 +41,7 @@ router.post(
     const existingUser = await AuthRepo.find(email);
     if (existingUser) {
       //  if user already exists send back a 400
-      throw new ValidationError("User taken");
+      throw new ClientError("Username unavailable");
     }
 
     // create the user

@@ -7,9 +7,8 @@ export function errorHandler(
   res: Response,
   next: NextFunction
 ) {
-  console.log("In the error handler");
   if (err instanceof CustomError) {
-    return res.status(err.statusCode).send({ errors: err.message });
+    return res.status(err.statusCode).send({ errors: err.serializeErrors() });
   } else {
     return res.send({ error: "Something went wrong with the request" });
   }
