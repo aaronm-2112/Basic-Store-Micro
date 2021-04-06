@@ -3,7 +3,10 @@ import { signupRouter } from "./routes/signup";
 import { signinRouter } from "./routes/signin";
 import { currentuserRouter } from "./routes/current-user";
 import { logoutRouter } from "./routes/logout";
+import { errorHandler } from "./middlewares/error-handler";
 import cookieSession from "cookie-session";
+import { UnauthorizedError } from "./errors/unauthorized-error";
+//import { UnauthorizedError } from "../errors/unauthorized-error";
 
 const app = express();
 
@@ -31,8 +34,10 @@ app.use(signinRouter);
 app.use(currentuserRouter);
 app.use(logoutRouter);
 
-app.get("/", (req: Request, res: Response) => {
-  res.send("Root routes fun");
+app.get("*", (req: Request, res: Response) => {
+  throw new UnauthorizedError("Not allowed here");
 });
+
+app.use(errorHandler);
 
 export { app };

@@ -24,6 +24,7 @@
     "cookie-session": "^1.4.0",
     "crypto": "^1.0.1",
     "express": "^4.17.1",
+    "express-async-errors": "^3.1.1",
     "express-validator": "^6.10.0",
     "jsonwebtoken": "^8.5.1",
     "node-pg-migrate": "^5.9.0",
