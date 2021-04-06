@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import jsonwebtoken from "jsonwebtoken";
+import { UnauthorizedError } from "../errors/unauthorized-error";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.get("/api/auth/currentuser", async (req: Request, res: Response) => {
   // check if the jwt is null/undefined
   if (!jwt) {
     //  if so return 401
-    return res.sendStatus(401);
+    throw new UnauthorizedError("Need to log in to access this resource.");
   }
   // verify the jwt and extract the payload
   // TODO: Place into middleware to centralize this (it is used in decodeJWT as well for testing)

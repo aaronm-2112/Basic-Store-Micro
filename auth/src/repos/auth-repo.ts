@@ -39,37 +39,28 @@ class AuthRepo {
     email: string,
     password: string
   ): Promise<User> {
-    try {
-      // check if the password can be hashed
-      if (password.length < 1) {
-        throw new Error();
-      }
+    // hash the password
+    const hashedPassword = await bcrypt.hash(password, 1); // TODO: Make a better salt process
 
-      // hash the password
-      const hashedPassword = await bcrypt.hash(password, 1); // TODO: Make a better salt process
-
-      // write the user creation statement and execute it
-      const result = await Pool.query(
-        `INSERT INTO users (username, email, password) 
+    // write the user creation statement and execute it
+    const result = await Pool.query(
+      `INSERT INTO users (username, email, password) 
          VALUES ($1, $2, $3) RETURNING *`,
-        [username, email, hashedPassword]
-      );
+      [username, email, hashedPassword]
+    );
 
-      if (!result) {
-        throw new Error("Database connection error");
-      }
-
-      const rows = result.rows;
-
-      return {
-        id: rows[0].id,
-        username: rows[0].username as string,
-        password: rows[0].password,
-        email: rows[0].email,
-      };
-    } catch (e) {
-      throw new Error(e);
+    if (!result) {
+      throw new Error("Database pool not setup.");
     }
+
+    const rows = result.rows;
+
+    return {
+      id: rows[0].id,
+      username: rows[0].username as string,
+      password: rows[0].password,
+      email: rows[0].email,
+    };
   }
 }
 
