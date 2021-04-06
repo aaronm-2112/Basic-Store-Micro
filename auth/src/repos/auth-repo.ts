@@ -39,6 +39,9 @@ class AuthRepo {
     email: string,
     password: string
   ): Promise<User> {
+    if (password.length < 1) {
+      throw new Error("No password provided to create method. ");
+    }
     // hash the password
     const hashedPassword = await bcrypt.hash(password, 1); // TODO: Make a better salt process
 
