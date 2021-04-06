@@ -4,40 +4,34 @@ import bcrypt from "bcrypt";
 
 class AuthRepo {
   async find(email: string): Promise<User | undefined> {
-    try {
-      // write and execute the find query using the Pool interface
-      const result = await Pool.query(`SELECT * FROM users WHERE email = $1`, [
-        email,
-      ]);
+    // write and execute the find query using the Pool interface
+    const result = await Pool.query(`SELECT * FROM users WHERE email = $1`, [
+      email,
+    ]);
 
-      // console.log(result);
-
-      if (!result) {
-        // this only occurs when a pool hasn't been setup
-        throw new Error("Database connection error");
-      }
-
-      const rows = result.rows;
-
-      // check if any user was returned
-      if (!rows.length) {
-        // if no user was found return undefined
-        return undefined;
-      }
-
-      // place all of the result properties into a user object
-      const user: User = {
-        id: rows[0].id,
-        username: rows[0].username as string,
-        password: rows[0].password,
-        email: rows[0].email,
-      };
-
-      // return the user
-      return user;
-    } catch (e) {
-      throw new Error(e);
+    if (!result) {
+      // this only occurs when a pool hasn't been setup
+      throw new Error("Database pool not setup.");
     }
+
+    const rows = result.rows;
+
+    // check if any user was returned
+    if (!rows.length) {
+      // if no user was found return undefined
+      return undefined;
+    }
+
+    // place all of the result properties into a user object
+    const user: User = {
+      id: rows[0].id,
+      username: rows[0].username as string,
+      password: rows[0].password,
+      email: rows[0].email,
+    };
+
+    // return the user
+    return user;
   }
 
   async create(

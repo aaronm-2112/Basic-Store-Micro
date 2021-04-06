@@ -31,7 +31,6 @@ router.post(
       }); // changes listen
 
       throw new InputValidationError(errors);
-      //return res.sendStatus(500);
     }
 
     // grab username, email, and password fromt the request
