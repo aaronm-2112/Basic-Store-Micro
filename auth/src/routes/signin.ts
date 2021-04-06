@@ -3,6 +3,8 @@ import { validationResult, body } from "express-validator";
 import bcrypt from "bcrypt";
 import { AuthRepo } from "../repos/auth-repo";
 import { createJWT } from "../services/jwt";
+import { InputValidationError } from "../errors/validation-error";
+import { ClientError } from "../errors/client-error";
 
 const router = express.Router();
 
@@ -28,7 +30,7 @@ router.post(
       errors.array().forEach((element) => {
         //console.error(element);
       });
-      return res.sendStatus(400);
+      throw new InputValidationError(errors);
     }
 
     // get the user information
@@ -39,7 +41,9 @@ router.post(
 
     // check if the user does not exist
     if (!user) {
-      return res.sendStatus(400);
+      throw new ClientError(
+        "There is something wrong with your email or password."
+      );
     }
 
     // compare the password given by the user to their stored salted password
@@ -47,7 +51,9 @@ router.post(
 
     // if there isn't a match return a 400
     if (!match) {
-      return res.sendStatus(400);
+      throw new ClientError(
+        "There is something wrong with your email or password."
+      );
     }
 
     // create the user's session using a HMAC JWT -- TODO: Use RSA
