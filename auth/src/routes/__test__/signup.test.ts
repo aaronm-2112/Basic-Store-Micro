@@ -1,8 +1,8 @@
 import request from "supertest";
 import { app } from "../../app";
 import Context from "../../test/context";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import { decodeCookie } from "../../services/decode-cookie";
 
 let context: Context;
 beforeAll(async () => {
@@ -22,50 +22,6 @@ beforeEach(async () => {
 const username = "test",
   password = "1234",
   email = "test@test.com";
-
-// TODO: Cleanup decode cookie function
-interface sessionJWT {
-  username: string;
-  email: string;
-  iat: number;
-}
-async function decodeCookie(response: request.Response): Promise<sessionJWT> {
-  // console.log(response.headers);
-  // console.log(response.headers["set-cookie"][0]); // TOOO: Make dynamic
-  // extract the cookie from the set cookie header
-  let cookieEndIndex = 0;
-
-  for (let i = 0; i < response.headers["set-cookie"][0].length; i++) {
-    if (response.headers["set-cookie"][0][i] === ";") {
-      break;
-    }
-    cookieEndIndex++;
-  }
-
-  let base64cookie = response.headers["set-cookie"][0].substring(
-    13, //TODO: Make more dynamic by searching for an equal sign that marks the start of the cookie's base64 encoded value
-    cookieEndIndex
-  );
-
-  // decode the cookie b/c it is set in base 64
-  let buff = Buffer.from(base64cookie, "base64");
-  let JSONCookie = buff.toString("ascii");
-  //console.log(JSONCookie);
-
-  // parse the JSON value of the JSON stringified and still as of yet encrypted cookie
-  let parsedCoookie = JSON.parse(JSONCookie);
-  //console.log(parsedCoookie);
-
-  // decrypt the jwt portion of the cookie using the secret used to encode it
-  let token = (await jwt.verify(parsedCoookie.jwt, "test-secret")) as {
-    username: string;
-    email: string;
-    iat: number;
-  };
-  //console.log(token);
-
-  return token;
-}
 
 it("Returns a 201 on successful signup", async () => {
   // send the faked HTTP request to create a user

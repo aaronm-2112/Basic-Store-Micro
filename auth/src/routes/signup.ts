@@ -23,6 +23,7 @@ router.post(
   ],
   validateInput,
   async (req: Request, res: Response) => {
+
     // grab username, email, and password fromt the request
     const { email, username, password } = req.body;
 
