@@ -27,7 +27,7 @@ router.post(
     if (!errors.isEmpty()) {
       //  if not send back a 400
       errors.array().forEach((element) => {
-        console.error(element);
+        //console.error(element);
       }); // changes listen
 
       throw new InputValidationError(errors);
