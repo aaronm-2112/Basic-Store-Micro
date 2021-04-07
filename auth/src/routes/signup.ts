@@ -1,10 +1,10 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import "express-async-errors";
-import { validationResult, body } from "express-validator";
+import { body } from "express-validator";
 import { createJWT } from "../services/jwt";
 import { AuthRepo } from "../repos/auth-repo";
-import { InputValidationError } from "../errors/validation-error";
 import { ClientError } from "../errors/client-error";
+import { validateInput } from "../middlewares/input-validation";
 const router = express.Router();
 
 router.post(
@@ -21,17 +21,8 @@ router.post(
       .notEmpty()
       .withMessage("Password is not valid"),
   ],
+  validateInput,
   async (req: Request, res: Response) => {
-    // check if validation passes
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      //  if not send back a 400
-      errors.array().forEach((element) => {
-        //console.error(element);
-      }); // changes listen
-
-      throw new InputValidationError(errors);
-    }
 
     // grab username, email, and password fromt the request
     const { email, username, password } = req.body;
