@@ -2,10 +2,10 @@ import { app } from "./app";
 import { Pool } from "./pool";
 import migrate from "node-pg-migrate";
 
-// TODO: Change default PG_USER env variable
 // TODO: Fix two problems:
-//       1. Connect to an auth-micro database that may not always exist
+//       1. Connect to an auth-micro database that may not always exist [Eventual WIP]
 //       2. Run the migrations if there is no table [done]
+
 (async () => {
   if (!process.env.PG_HOST) {
     throw new Error("No host detected");

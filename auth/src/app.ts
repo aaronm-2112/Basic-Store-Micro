@@ -6,7 +6,6 @@ import { logoutRouter } from "./routes/logout";
 import { errorHandler } from "./middlewares/error-handler";
 import cookieSession from "cookie-session";
 import { UnauthorizedError } from "./errors/unauthorized-error";
-//import { UnauthorizedError } from "../errors/unauthorized-error";
 
 const app = express();
 
