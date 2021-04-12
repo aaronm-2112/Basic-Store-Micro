@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: products-micro-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: products-micro
+  template:
+    metadata:
+      labels:
+        app: products-micro
+    spec:
+      containers:
+        - name: products-micro
+          image: aaronpazm/products-micro
+          env:
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwtkey
+                  key: JWT_KEY
+            - name: MONGO_URI
+              value: "mongodb://products-mongo-srv:27017/products"

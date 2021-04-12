@@ -17,3 +17,11 @@ build:
         manual:
           - src: "src/**/*.ts"
             dest: .
+    - image: aaronpazm/products-micro
+      context: products
+      docker:
+        dockerfile: Dockerfile
+      sync:
+        manual:
+          - src: "src/**/*.ts"
+            dest: .
