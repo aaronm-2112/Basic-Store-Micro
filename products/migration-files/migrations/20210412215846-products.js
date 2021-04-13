@@ -17,22 +17,45 @@ module.exports = {
             "price",
             "description",
             "category",
-            "imgURI",
+            "imageURI",
             "quantity",
             "user",
           ],
           properties: {
             name: {
+              // every product needs to be named
               bsonType: "string",
-              required: true,
             },
             price: {
               bsonType: "double",
-              required: true,
             },
-            descritpion: {
+            description: {
+              // every product requires a description
               bsonType: "string",
-              required: true,
+            },
+            category: {
+              // each product can belong to many categories
+              bsonType: "array",
+            },
+            imageURI: {
+              bsonType: "string",
+            },
+            quantity: {
+              // used to keep track of how many products are still in stock
+              bsonType: "int",
+            },
+            user: {
+              // embed the user document because this information is logically grouped when pulling product info
+              bsonType: "object",
+              required: ["username", "email"],
+              properties: {
+                username: {
+                  bsonType: "string",
+                },
+                email: {
+                  bsonType: "string",
+                },
+              },
             },
           },
         },
@@ -44,5 +67,6 @@ module.exports = {
     // TODO write the statements to rollback your migration (if possible)
     // Example:
     // await db.collection('albums').updateOne({artist: 'The Beatles'}, {$set: {blacklisted: false}});
+    await db.collection("products").drop();
   },
 };
