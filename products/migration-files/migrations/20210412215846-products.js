@@ -25,13 +25,16 @@ module.exports = {
             name: {
               // every product needs to be named
               bsonType: "string",
+              minLength: 1,
             },
             price: {
               bsonType: "double",
+              minimum: 1,
             },
             description: {
               // every product requires a description
               bsonType: "string",
+              minLength: 1,
             },
             category: {
               // each product can belong to many categories
@@ -43,6 +46,7 @@ module.exports = {
             quantity: {
               // used to keep track of how many products are still in stock
               bsonType: "int",
+              minimum: 0,
             },
             user: {
               // embed the user document because this information is logically grouped when pulling product info
@@ -51,9 +55,11 @@ module.exports = {
               properties: {
                 username: {
                   bsonType: "string",
+                  minLength: 1,
                 },
                 email: {
                   bsonType: "string",
+                  minLength: 1, // while meaningless in that it cannot identify if this is an email, it will throw a guaranted error if an empty string is placed accidentally
                 },
               },
             },
