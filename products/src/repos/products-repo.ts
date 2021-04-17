@@ -1,7 +1,6 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
-import { ObjectID } from "mongodb";
 
 export class ProductsRepo {
   // get the products collection from the mongo client

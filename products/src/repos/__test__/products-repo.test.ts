@@ -6,10 +6,14 @@ import { dbConfig } from "../../config/database-config";
 import { ProductsRepo } from "../products-repo";
 import { ProductModel } from "../../models/product-model";
 
+// the repository used in the tests
+let pr: ProductsRepo;
+
 // before any tests run connect to the test database and run our migrations on it
 beforeAll(async () => {
   await connectToTestDatabase(dbConfig.databaseName);
   await runMigrationsOnTestDatabase();
+  pr = new ProductsRepo();
 });
 
 // Method: insertOne
@@ -28,8 +32,8 @@ it("Inserts a product into the database successfully", async () => {
     },
   };
 
-  // crceate the products repository
-  let pr: ProductsRepo = new ProductsRepo();
+  // // crceate the products repository
+  // let pr: ProductsRepo = new ProductsRepo();
 
   // insert the product into the repository
   let id = await pr.create(pm);
@@ -39,6 +43,39 @@ it("Inserts a product into the database successfully", async () => {
 
   // assert that the found document and the inserted document match
   expect(productFromId).toEqual(pm);
+});
+
+it("Fails to insert a product with a negative price", async (done) => {
+  // create a product
+  let pm: ProductModel = {
+    name: "Comb",
+    price: -12.5,
+    quantity: 2,
+    description: "A basic comb for hair.",
+    category: ["hair care"],
+    imageURI: "/path/to/comb/image",
+    user: {
+      username: "Sears",
+      email: "Searsshipping@gmail.com",
+    },
+  };
+
+  // attempt to insert the product into the database
+  try {
+    // should throw an error b/c price is negative
+    await pr.create(pm);
+    // force a failure if the database did not throw an error
+    expect("a").toBe("b");
+  } catch (e) {
+    // convert e into an Error
+    let er = e as Error;
+
+    // check that we got a document validation error
+    expect(er.message).toBe("MongoError: Document failed validation");
+
+    // end the test
+    done();
+  }
 });
 
 // Might make both of these the same method and incrementing or decrementing quantity will depend on a status enum for order created ort cancelled
