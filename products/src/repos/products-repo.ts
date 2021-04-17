@@ -1,6 +1,7 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
+import { ObjectID } from "mongodb";
 
 export class ProductsRepo {
   // get the products collection from the mongo client
@@ -8,10 +9,23 @@ export class ProductsRepo {
     dbConfig.productsCollectionName
   );
 
-  // create a product in the products database
-  async create(pm: ProductModel): Promise<ProductModel> {
-    await this.productsCollection!.insertOne(pm);
+  // create a product in the products database and get back a product ID
+  async create(pm: ProductModel): Promise<string> {
+    try {
+      // insert the product into the collection
+      let res = await this.productsCollection!.insertOne(pm);
 
-    return pm;
+      // get the id of the inserted product
+      let insertedId = res.insertedId;
+
+      // return the id to the client
+      return insertedId;
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
+
+  async findOne(id: string) {
+    this.productsCollection?.findOne({ _id: id });
   }
 }
