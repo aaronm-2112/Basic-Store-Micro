@@ -1,35 +1,41 @@
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { MongoClient, Db } from "mongodb";
+import { client } from "../client";
 import { up } from "migrate-mongo";
 
-let mongo: any;
-let mc: MongoClient;
-let db: Db;
+// purpose: allow for parallel testing with Jest using the singleton mongo client and a mongo memory server
 
-// a hook
-beforeAll(async () => {
-  process.env.JWT_KEY = "asdf";
-  process.env.NODE_ENV = "test";
+// the mongo memory server we connect our client to for tests
+let mongo: any;
+
+// connect our client to the mongo memory server before any tests run in a test file
+export async function connectToTestDatabase(databaseName: string) {
   mongo = new MongoMemoryServer();
   const mongoUri = await mongo.getUri();
 
-  let mc = new MongoClient(mongoUri, {
+  await client.connect(mongoUri, databaseName, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+}
 
-  await mc.connect();
+// run the database migrations on the mongo memory server before any tests run in a test file
+export async function runMigrationsOnTestDatabase() {
+  // get the database instance from the singelton mongo client
+  let db = client.getDatabase();
 
-  db = mc.db("products-micro-test");
-
-  // run the migrations up
+  // check if the database is defined
+  if (!db) {
+    console.error("No database returned in runMigrationOnTestDatabase");
+    return;
+  }
+  // run the migrations on the singletons db instance
   await up(db);
-});
+}
 
-// clean the db data before each test
+// clean the db data before each test using the client
 beforeEach(async () => {
   jest.clearAllMocks();
-  const collections = await mc.db("products-micro-test").collections();
+  const collections = await client.getDatabase()!.collections();
 
   for (let collection of collections) {
     await collection.deleteMany({});
@@ -38,7 +44,8 @@ beforeEach(async () => {
   }
 });
 
+// after all tests are done disconnect from the test database and close the client connection
 afterAll(async () => {
   await mongo.stop(); // this should get rid of the in memory data stores based of the documentation - meaning I don't need to run down
-  await mc.close();
+  await client.close();
 });
