@@ -1,6 +1,7 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
+import { createCipher } from "crypto";
 
 export class ProductsRepo {
   // get the products collection from the mongo client
@@ -24,7 +25,23 @@ export class ProductsRepo {
     }
   }
 
-  async findOne(id: string) {
-    this.productsCollection?.findOne({ _id: id });
+  async findOne(id: string): Promise<ProductModel> {
+    try {
+      // search for the product by id
+      let res = this.productsCollection!.findOne({ _id: id });
+
+      // check if no product is found
+      //     return undefined
+
+      // create an empty product model
+
+      // fill the product model fields with the result
+
+      // return the product model to the client
+    } catch (e) {
+      throw new Error(e);
+    }
   }
+
+  async orderCreated(id: string) {}
 }
