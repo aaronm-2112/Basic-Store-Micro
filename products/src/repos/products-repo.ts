@@ -53,55 +53,89 @@ export class ProductsRepo {
     }
   }
 
+  // TODO: Enable pagination
   async findByCategory(category: string): Promise<Array<ProductModel>> {
-    return [
-      {
-        name: "Comb",
-        price: 12.5,
-        quantity: 1,
-        description: "A basic comb for hair.",
-        category: ["hair care"],
-        imageURI: "/path/to/comb/image",
-        user: {
-          username: "Sears",
-          email: "Searsshipping@gmail.com",
-        },
-      },
-    ];
+    try {
+      // search for 10 producs with the required category and return 10 results
+      let productDocuments = await this.productsCollection!.find({
+        category: category,
+      })
+        .limit(10)
+        .toArray();
+
+      // make the product documents product models
+      let products = productDocuments.map((productDocumnent) => {
+        return {
+          name: productDocumnent.name,
+          price: productDocumnent.price,
+          description: productDocumnent.description,
+          imageURI: productDocumnent.imageURI,
+          category: productDocumnent.category,
+          quantity: productDocumnent.quantity,
+          user: productDocumnent.user,
+        };
+      });
+
+      return products;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async findByName(name: string): Promise<Array<ProductModel>> {
-    return [
-      {
-        name: "Comb",
-        price: 12.5,
-        quantity: 1,
-        description: "A basic comb for hair.",
-        category: ["hair care"],
-        imageURI: "/path/to/comb/image",
-        user: {
-          username: "Sears",
-          email: "Searsshipping@gmail.com",
-        },
-      },
-    ];
+    try {
+      // search for products that contain the given name using the text index
+      let productDocuments = await this.productsCollection!.find({
+        $text: { $search: name },
+      })
+        .limit(10)
+        .toArray();
+
+      // create an array of product models
+      let products = productDocuments.map((productDocumnent) => {
+        return {
+          name: productDocumnent.name,
+          price: productDocumnent.price,
+          description: productDocumnent.description,
+          imageURI: productDocumnent.imageURI,
+          category: productDocumnent.category,
+          quantity: productDocumnent.quantity,
+          user: productDocumnent.user,
+        };
+      });
+
+      return products;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async findBySeller(sellerName: string): Promise<Array<ProductModel>> {
-    return [
-      {
-        name: "Comb",
-        price: 12.5,
-        quantity: 1,
-        description: "A basic comb for hair.",
-        category: ["hair care"],
-        imageURI: "/path/to/comb/image",
-        user: {
-          username: "Sears",
-          email: "Searsshipping@gmail.com",
-        },
-      },
-    ];
+    try {
+      // search for 10 producs with the required category and return 10 results
+      let productDocuments = await this.productsCollection!.find({
+        "user.username": sellerName,
+      })
+        .limit(10)
+        .toArray();
+
+      // make the product documents product models
+      let products = productDocuments.map((productDocumnent) => {
+        return {
+          name: productDocumnent.name,
+          price: productDocumnent.price,
+          description: productDocumnent.description,
+          imageURI: productDocumnent.imageURI,
+          category: productDocumnent.category,
+          quantity: productDocumnent.quantity,
+          user: productDocumnent.user,
+        };
+      });
+
+      return products;
+    } catch (e) {
+      throw new Error(e);
+    }
   }
 
   async updateProduct(updatedProduct: ProductModel, id: string) {
@@ -119,8 +153,6 @@ export class ProductsRepo {
             quantity: updatedProduct.quantity,
             imageURI: updatedProduct.imageURI,
             user: updatedProduct.user,
-            // "user.email": updatedProduct.user.email,
-            // "user.username": updatedProduct.user.username,
           },
         }
       );
@@ -134,7 +166,17 @@ export class ProductsRepo {
     }
   }
 
-  async deleteProduct(id: string) {}
+  async deleteProduct(id: string) {
+    try {
+      let deleteResult = await this.productsCollection!.deleteOne({ _id: id });
+
+      if (!deleteResult.result.ok) {
+        throw new Error("No product to delete");
+      }
+    } catch (e) {
+      throw new Error(e);
+    }
+  }
 
   async changeQuantity(id: string, up: boolean) {
     try {

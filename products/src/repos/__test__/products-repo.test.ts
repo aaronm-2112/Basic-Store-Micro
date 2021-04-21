@@ -179,7 +179,7 @@ it("Updates all the product fields changed by the client", async () => {
   expect(updatedProduct!.description).toBe(p.description);
 
   // check that fields left unchanged by the client are still the same
-  expect(updatedProduct!.category).toBe(p.category);
+  expect(updatedProduct!.category[0]).toBe(p.category[0]);
   expect(updatedProduct!.imageURI).toBe(p.imageURI);
   expect(updatedProduct!.quantity).toBe(p.quantity);
   expect(updatedProduct!.user.email).toBe(p.user.email);
@@ -234,7 +234,7 @@ it("Finds a set of products that match the category", async () => {
 
   let p2: ProductModel = {
     name: "Black Hair Dye",
-    price: 10.0,
+    price: 10.5,
     quantity: 1,
     description: "Dye your hair black.",
     category: ["hair care"],
@@ -247,7 +247,7 @@ it("Finds a set of products that match the category", async () => {
 
   let p3: ProductModel = {
     name: "Green Brush",
-    price: 7.0,
+    price: 7.5,
     quantity: 1,
     description: "A basic brush for hair.",
     category: ["hair care"],
@@ -269,9 +269,9 @@ it("Finds a set of products that match the category", async () => {
   expect(products.length).toBe(3);
 
   // ensure all of the returned products have hair care as their category
-  expect(products[0].category).toBe("hair care");
-  expect(products[1].category).toBe("hair care");
-  expect(products[2].category).toBe("hair care");
+  expect(products[0].category[0]).toBe("hair care");
+  expect(products[1].category[0]).toBe("hair care");
+  expect(products[2].category[0]).toBe("hair care");
 });
 
 // Method: findByName
@@ -345,6 +345,8 @@ it("Finds all the products by a particular seller", async () => {
       email: "viggothrift@gmail.com",
     },
   };
+
+  await pr.create(p);
 
   // search for viggo's thrift using findBySeller
   let products = await pr.findBySeller("Viggo's Thrift");
