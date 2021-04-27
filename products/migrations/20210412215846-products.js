@@ -19,6 +19,7 @@ module.exports = {
             "category",
             "imageURI",
             "quantity",
+            "brand",
             "user",
           ],
           properties: {
@@ -47,6 +48,10 @@ module.exports = {
               // used to keep track of how many products are still in stock
               bsonType: "int",
               minimum: 0,
+            },
+            brand: {
+              bsonType: "string",
+              minLength: 1,
             },
             user: {
               // embed the user document because this information is logically grouped when pulling product info

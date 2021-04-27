@@ -1,9 +1,9 @@
 module.exports = {
   async up(db, client) {
-    // create a compound text based index to support basic full text search on a product name and username
+    // create a compound text based index to support basic full text search on a product name and category
     await db
       .collection("products")
-      .createIndex({ name: "text", "user.username": "text" });
+      .createIndex({ name: "text", brand: "text", category: "text" });
   },
 
   async down(db, client) {

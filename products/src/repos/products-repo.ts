@@ -1,6 +1,7 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
+import { ObjectId } from "mongodb";
 
 export class ProductsRepo {
   // get the products collection from the mongo client
@@ -43,6 +44,7 @@ export class ProductsRepo {
         imageURI: res.imageURI,
         category: res.category,
         quantity: res.quantity,
+        brand: res.brand,
         user: res.user,
       };
 
@@ -73,6 +75,7 @@ export class ProductsRepo {
           category: productDocumnent.category,
           quantity: productDocumnent.quantity,
           user: productDocumnent.user,
+          brand: productDocumnent.brand,
         };
       });
 
@@ -101,6 +104,7 @@ export class ProductsRepo {
           category: productDocumnent.category,
           quantity: productDocumnent.quantity,
           user: productDocumnent.user,
+          brand: productDocumnent.brand,
         };
       });
 
@@ -128,6 +132,7 @@ export class ProductsRepo {
           imageURI: productDocumnent.imageURI,
           category: productDocumnent.category,
           quantity: productDocumnent.quantity,
+          brand: productDocumnent.brand,
           user: productDocumnent.user,
         };
       });
@@ -201,4 +206,103 @@ export class ProductsRepo {
       throw new Error(e);
     }
   }
+
+  // Likely plan: Make a pagination strategy for the various different query variations I may need for pagination.
+  //              Then add a factory in this method. The factory spits out the correct strategy object. We delegate to it.
+  //              Then return the results.
+  // search by name, category, or both name & category
+  // sort by price, date, (eventually, reviews), or no sorting at all besides text weight(like Amazon's 'featured')
+  // unique element is the ObjectId of each product - this will break ties
+
+  // parameters:
+  //   -category: any app defined category we have
+  //   -productName: The name/set of words that define what the user is searching for
+  //   -sortBy: The price or date the user wants to sort their search with.
+  //   -sortByValue: The value used to get the next set of search results
+  //   -uniqueKey: The object id of the product from which the sortByValue is derived. Used to break ties.
+  //   -nextOrPrevious: Paginate up or paginate down
+
+  async samplePaginationQuery(
+    category: string,
+    productName: string,
+    sortBy: string,
+    sortByValue: number,
+    uniqueKey: string,
+    nextOrPrevious: string
+  ) {
+    // { $expr: { $gt: [ "$spent" , "$budget" ] } } )
+    // query for the next page of results in sorted order -- keep tie breaking in mind
+    // let res = await this.productsCollection!.find({
+    //   $or: [
+    //     { $expr: { $gt: [`$${sortBy}`, `${sortByValue}`] } },
+    //     {
+    //       $and: [
+    //         { $expr: { $eq: [`$${sortBy}`, `${sortByValue}`] } },
+    //         { _id: { $gt: new ObjectId(uniqueKey) } },
+    //       ],
+    //     },
+    //   ],
+    // })
+    //   .sort({
+    //     height: 1,
+    //     _id: 1,
+    //   })
+    //   .limit(3)
+    //   .toArray();
+
+    // finish sortBy testing [paging up]
+    // add sortBy and name testing [paging up]
+    // add sortBy, category, and name testing [paging up]
+    // next : implement all of the same code but for paging down.
+    // try to pseudo code out the design i want to use (so basically the strategies, etc)
+
+    // base page up query
+    // let res = await this.productsCollection!.find({
+    //   // find by matching keywords
+    //   $text: { $search: '"footwear" "Nike" Silica ' },
+    //   // pagination logic - UP
+    //   $or: [
+    //     { price: { $gt: 8 } },
+    //     {
+    //       price: 8,
+    //       _id: { $gt: new ObjectId(uniqueKey) },
+    //     },
+    //   ],
+    // })
+    //   // sort logic
+    //   .sort({
+    //     price: -1,
+    //   })
+    //   // limit results
+    //   .limit(4)
+    //   // turn the limited results into an array
+    //   .toArray();
+
+    // // .explain(); -- for testing
+
+    // Write a basic 'featured' style query where we wiegh the words and their presence and sort by that instead
+
+    let products = res.map((productDocumnent) => {
+      return {
+        name: productDocumnent.name,
+        price: productDocumnent.price,
+        description: productDocumnent.description,
+        imageURI: productDocumnent.imageURI,
+        category: productDocumnent.category,
+        quantity: productDocumnent.quantity,
+        brand: productDocumnent.brand,
+        user: productDocumnent.user,
+      };
+    });
+
+    return products;
+  }
+}
+
+// check if a keyword in the query is a brand name -- this will be made a expression match in the text search portion of the query
+function checkCacheForBrand(query: string) {
+  // scan the query for brand keywords -- use a Redis cache to store all of the brand names for quick lookup time
+  // scan through the query string
+  //     check if a word is a brand name in the Redis cache
+  //     if so return that word and stop -- this will be our brand
 }

@@ -7,6 +7,7 @@ export interface ProductModel {
   category: string[];
   imageURI: string;
   quantity: number;
+  brand: string;
   // the entity selling the product and their contact info
   user: { username: string; email: string };
 }
