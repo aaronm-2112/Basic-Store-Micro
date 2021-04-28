@@ -222,6 +222,8 @@ export class ProductsRepo {
   //   -uniqueKey: The object id of the product from which the sortByValue is derived. Used to break ties.
   //   -nextOrPrevious: Paginate up or paginate down
 
+  // Will not return items in order by their ObjectIDs. It will be the job of the front end to get the highest and lowest ObjectIDs from the result set.
+  // The front end will also send back the appropriate ID - Highest or lowest - depending upon the user's decision to page up or down.
   async samplePaginationQuery(
     category: string,
     productName: string,
@@ -281,6 +283,19 @@ export class ProductsRepo {
     // // .explain(); -- for testing
 
     // Write a basic 'featured' style query where we wiegh the words and their presence and sort by that instead
+    let res = await this.productsCollection!.find({
+      // find by matching keywords
+      $text: { $search: '"footwear" "Nike" Silica ' },
+      // pagination logic - UP
+      _id: { $gt: new ObjectId(uniqueKey) },
+    })
+      // required in the MongoDB Node driver to allow weighing results by # of keyword matches
+      .project({ score: { $meta: "textScore" } })
+      .sort({ score: { $meta: "textScore" } })
+      // limit results
+      .limit(4)
+      // turn the limited results into an array
+      .toArray();
 
     let products = res.map((productDocumnent) => {
       return {
