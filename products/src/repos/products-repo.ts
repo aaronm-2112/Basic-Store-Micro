@@ -2,8 +2,10 @@ import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
 import { ObjectId } from "mongodb";
+import { PaginationOptions } from "./pagination-options";
+import { PaginationStrategy } from "./pagination-strategies/pagination-strategy-base";
 
-export class ProductsRepo {
+export abstract class ProductsRepo {
   // get the products collection from the mongo client
   private productsCollection = client.getCollection(
     dbConfig.productsCollectionName
@@ -224,94 +226,16 @@ export class ProductsRepo {
 
   // Will not return items in order by their ObjectIDs. It will be the job of the front end to get the highest and lowest ObjectIDs from the result set.
   // The front end will also send back the appropriate ID - Highest or lowest - depending upon the user's decision to page up or down.
-  async samplePaginationQuery(
-    category: string,
-    productName: string,
-    sortBy: string,
-    sortByValue: number,
-    uniqueKey: string,
-    nextOrPrevious: string
-  ) {
-    // { $expr: { $gt: [ "$spent" , "$budget" ] } } )
-    // query for the next page of results in sorted order -- keep tie breaking in mind
-    // let res = await this.productsCollection!.find({
-    //   $or: [
-    //     { $expr: { $gt: [`$${sortBy}`, `${sortByValue}`] } },
-    //     {
-    //       $and: [
-    //         { $expr: { $eq: [`$${sortBy}`, `${sortByValue}`] } },
-    //         { _id: { $gt: new ObjectId(uniqueKey) } },
-    //       ],
-    //     },
-    //   ],
-    // })
-    //   .sort({
-    //     height: 1,
-    //     _id: 1,
-    //   })
-    //   .limit(3)
-    //   .toArray();
-
-    // finish sortBy testing [paging up]
-    // add sortBy and name testing [paging up]
-    // add sortBy, category, and name testing [paging up]
-    // next : implement all of the same code but for paging down.
-    // try to pseudo code out the design i want to use (so basically the strategies, etc)
-
-    // base page up query
-    // let res = await this.productsCollection!.find({
-    //   // find by matching keywords
-    //   $text: { $search: '"footwear" "Nike" Silica ' },
-    //   // pagination logic - UP
-    //   $or: [
-    //     { price: { $gt: 8 } },
-    //     {
-    //       price: 8,
-    //       _id: { $gt: new ObjectId(uniqueKey) },
-    //     },
-    //   ],
-    // })
-    //   // sort logic
-    //   .sort({
-    //     price: -1,
-    //   })
-    //   // limit results
-    //   .limit(4)
-    //   // turn the limited results into an array
-    //   .toArray();
-
-    // // .explain(); -- for testing
-
-    // Write a basic 'featured' style query where we wiegh the words and their presence and sort by that instead
-    let res = await this.productsCollection!.find({
-      // find by matching keywords
-      $text: { $search: '"footwear" "Nike" Silica ' },
-      // pagination logic - UP
-      _id: { $gt: new ObjectId(uniqueKey) },
-    })
-      // required in the MongoDB Node driver to allow weighing results by # of keyword matches
-      .project({ score: { $meta: "textScore" } })
-      .sort({ score: { $meta: "textScore" } })
-      // limit results
-      .limit(4)
-      // turn the limited results into an array
-      .toArray();
-
-    let products = res.map((productDocumnent) => {
-      return {
-        name: productDocumnent.name,
-        price: productDocumnent.price,
-        description: productDocumnent.description,
-        imageURI: productDocumnent.imageURI,
-        category: productDocumnent.category,
-        quantity: productDocumnent.quantity,
-        brand: productDocumnent.brand,
-        user: productDocumnent.user,
-      };
-    });
-
-    return products;
+  async samplePaginationQuery(options: PaginationOptions) {
+    // pass the options into the createPaginationStratgey method
+    // delegate the pagination to the strategy
+    // return the resulting products to the callee
   }
+
+  // createPaginationStratgey is an abstract method
+  abstract createPaginationStrategy(
+    options: PaginationOptions
+  ): PaginationStrategy;
 }
 
 // check if a keyword in the query is a brand name -- this will be made a expression match in the text search portion of the query
