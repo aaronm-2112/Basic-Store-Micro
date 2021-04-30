@@ -3,8 +3,9 @@ import {
   runMigrationsOnTestDatabase,
 } from "../../test/setup";
 import { dbConfig } from "../../config/database-config";
-import { ProductsRepo } from "../products-repo";
+import { ProductsRepo } from "../products-repo-base";
 import { ProductModel } from "../../models/product-model";
+import { ProductsRepoPagination } from "../products-repo-pagination";
 
 // the repository used in the tests
 let pr: ProductsRepo;
@@ -13,43 +14,44 @@ let pr: ProductsRepo;
 beforeAll(async () => {
   await connectToTestDatabase(dbConfig.databaseName);
   await runMigrationsOnTestDatabase();
-  pr = new ProductsRepo();
+  pr = new ProductsRepoPagination();
 });
 
 // // Method: insertOne
-// it("Inserts a product into the database successfully", async () => {
-//   // create a product
-//   let pm: ProductModel = {
-//     name: "Comb",
-//     price: 12.5,
-//     quantity: 2,
-//     description: "A basic comb for hair.",
-//     category: ["hair care"],
-//     imageURI: "/path/to/comb/image",
-//     user: {
-//       username: "Sears",
-//       email: "Searsshipping@gmail.com",
-//     },
-//   };
+it("Inserts a product into the database successfully", async () => {
+  // create a product
+  let pm: ProductModel = {
+    name: "Comb",
+    price: 12.5,
+    quantity: 2,
+    description: "A basic comb for hair.",
+    category: ["hair care"],
+    imageURI: "/path/to/comb/image",
+    brand: "Nike",
+    user: {
+      username: "Sears",
+      email: "Searsshipping@gmail.com",
+    },
+  };
 
-//   // insert the product into the repository
-//   let id = await pr.create(pm);
+  // insert the product into the repository
+  let id = await pr.create(pm);
 
-//   // find the document in the repository using the id
-//   let productFromId = await pr.findOne(id);
+  // find the document in the repository using the id
+  let productFromId = await pr.findOne(id);
 
-//   expect(productFromId).not.toBe(undefined);
+  expect(productFromId).not.toBe(undefined);
 
-//   // assert that the found document and the inserted document match
-//   expect(productFromId!.description).toEqual(pm.description);
-//   expect(productFromId!.category).toEqual(pm.category);
-//   expect(productFromId!.name).toEqual(pm.name);
-//   expect(productFromId!.price).toEqual(pm.price);
-//   expect(productFromId!.imageURI).toEqual(pm.imageURI);
-//   expect(productFromId!.quantity).toEqual(pm.quantity);
-//   expect(productFromId!.user.email).toEqual(pm.user.email);
-//   expect(productFromId!.user.username).toEqual(pm.user.username);
-// });
+  // assert that the found document and the inserted document match
+  expect(productFromId!.description).toEqual(pm.description);
+  expect(productFromId!.category).toEqual(pm.category);
+  expect(productFromId!.name).toEqual(pm.name);
+  expect(productFromId!.price).toEqual(pm.price);
+  expect(productFromId!.imageURI).toEqual(pm.imageURI);
+  expect(productFromId!.quantity).toEqual(pm.quantity);
+  expect(productFromId!.user.email).toEqual(pm.user.email);
+  expect(productFromId!.user.username).toEqual(pm.user.username);
+});
 
 // it("Fails to insert a product with a negative price", async (done) => {
 //   // create a product
@@ -355,94 +357,94 @@ beforeAll(async () => {
 //   expect(products.length).toBe(1);
 // });
 
-it("Tests pagination", async () => {
-  let p: ProductModel = {
-    name: "Greenthumb",
-    price: 11.5,
-    quantity: 1,
-    description: "A basic shoe for your feet.",
-    category: ["footwear"],
-    imageURI: "/path/to/comb/image",
-    brand: "Nike",
-    user: {
-      username: "Viggo's Thrift",
-      email: "viggothrift@gmail.com",
-    },
-  };
+// it("Tests pagination", async () => {
+//   let p: ProductModel = {
+//     name: "Greenthumb",
+//     price: 11.5,
+//     quantity: 1,
+//     description: "A basic shoe for your feet.",
+//     category: ["footwear"],
+//     imageURI: "/path/to/comb/image",
+//     brand: "Nike",
+//     user: {
+//       username: "Viggo's Thrift",
+//       email: "viggothrift@gmail.com",
+//     },
+//   };
 
-  let p2: ProductModel = {
-    name: "Silica",
-    price: 12.5,
-    quantity: 1,
-    description: "A basic shoe for your feet.",
-    category: ["footwear"],
-    imageURI: "/path/to/comb/image",
-    brand: "Nike",
-    user: {
-      username: "Viggo's Thrift",
-      email: "viggothrift@gmail.com",
-    },
-  };
+//   let p2: ProductModel = {
+//     name: "Silica",
+//     price: 12.5,
+//     quantity: 1,
+//     description: "A basic shoe for your feet.",
+//     category: ["footwear"],
+//     imageURI: "/path/to/comb/image",
+//     brand: "Nike",
+//     user: {
+//       username: "Viggo's Thrift",
+//       email: "viggothrift@gmail.com",
+//     },
+//   };
 
-  let p3: ProductModel = {
-    name: "Court Compression Combo",
-    price: 13.5,
-    quantity: 1,
-    description: "A basic shoe for your feet.",
-    category: ["footwear"],
-    imageURI: "/path/to/comb/image",
-    brand: "Adidas",
-    user: {
-      username: "Viggo's Thrift",
-      email: "viggothrift@gmail.com",
-    },
-  };
+//   let p3: ProductModel = {
+//     name: "Court Compression Combo",
+//     price: 13.5,
+//     quantity: 1,
+//     description: "A basic shoe for your feet.",
+//     category: ["footwear"],
+//     imageURI: "/path/to/comb/image",
+//     brand: "Adidas",
+//     user: {
+//       username: "Viggo's Thrift",
+//       email: "viggothrift@gmail.com",
+//     },
+//   };
 
-  let p4: ProductModel = {
-    name: "Flex Surge",
-    price: 14.5,
-    quantity: 1,
-    description: "A basic shoe for your feet.",
-    category: ["footwear"],
-    imageURI: "/path/to/comb/image",
-    brand: "Nike",
-    user: {
-      username: "Viggo's Thrift",
-      email: "viggothrift@gmail.com",
-    },
-  };
+//   let p4: ProductModel = {
+//     name: "Flex Surge",
+//     price: 14.5,
+//     quantity: 1,
+//     description: "A basic shoe for your feet.",
+//     category: ["footwear"],
+//     imageURI: "/path/to/comb/image",
+//     brand: "Nike",
+//     user: {
+//       username: "Viggo's Thrift",
+//       email: "viggothrift@gmail.com",
+//     },
+//   };
 
-  let p5: ProductModel = {
-    name: "Swollen Foot",
-    price: 16.5,
-    quantity: 1,
-    description: "A basic shoe for your feet.",
-    category: ["footwear"],
-    imageURI: "/path/to/comb/image",
-    brand: "Nike",
-    user: {
-      username: "Viggo's Thrift",
-      email: "viggothrift@gmail.com",
-    },
-  };
+//   let p5: ProductModel = {
+//     name: "Swollen Foot",
+//     price: 16.5,
+//     quantity: 1,
+//     description: "A basic shoe for your feet.",
+//     category: ["footwear"],
+//     imageURI: "/path/to/comb/image",
+//     brand: "Nike",
+//     user: {
+//       username: "Viggo's Thrift",
+//       email: "viggothrift@gmail.com",
+//     },
+//   };
 
-  let pid = await pr.create(p);
-  await pr.create(p2);
-  await pr.create(p3);
-  await pr.create(p4);
-  await pr.create(p5);
+//   let pid = await pr.create(p);
+//   await pr.create(p2);
+//   await pr.create(p3);
+//   await pr.create(p4);
+//   await pr.create(p5);
 
-  // search for viggo's thrift using findBySeller
-  let products = await pr.samplePaginationQuery(
-    "footwear",
-    "Nike Shoes",
-    "price",
-    10.5,
-    pid,
-    "next"
-  );
+//   // search for viggo's thrift using findBySeller
+//   let products = await pr.samplePaginationQuery(
+//     "footwear",
+//     "Nike Shoes",
+//     "price",
+//     10.5,
+//     pid,
+//     "next"
+//   );
 
-  console.log(products);
+//   console.log(products);
 
-  // console.log(products);
-});
+//   // console.log(products);
+// });

@@ -16,10 +16,13 @@ export async function connectToTestDatabase(databaseName: string) {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
+
+  console.log("Connected to the database");
 }
 
 // run the database migrations on the mongo memory server before any tests run in a test file
 export async function runMigrationsOnTestDatabase() {
+  console.log("Running migrations");
   // get the database instance from the singelton mongo client
   let db = client.getDatabase();
 

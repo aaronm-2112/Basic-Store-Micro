@@ -1,15 +1,18 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
-import { ObjectId } from "mongodb";
 import { PaginationOptions } from "./pagination-options";
 import { PaginationStrategy } from "./pagination-strategies/pagination-strategy-base";
 
 export abstract class ProductsRepo {
-  // get the products collection from the mongo client
-  private productsCollection = client.getCollection(
-    dbConfig.productsCollectionName
-  );
+  // the products collection from the database
+  protected productsCollection;
+
+  constructor() {
+    this.productsCollection = client.getCollection(
+      dbConfig.productsCollectionName
+    );
+  }
 
   // create a product in the products database and get back a product ID
   async create(pm: ProductModel): Promise<string> {
