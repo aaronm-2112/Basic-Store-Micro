@@ -3,17 +3,21 @@
 
 import { PaginationOptions } from "../pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
-import { ObjectId } from "mongodb";
+import { ObjectId, Collection } from "mongodb";
 
 export class TextNextPagePagination extends PaginationStrategy {
-  async paginate(options: PaginationOptions) {
+  async paginate(
+    options: PaginationOptions,
+    productCollection: Collection<any>
+  ) {
     // Write a basic 'featured' style query where we wiegh the words and their presence and sort by that instead
-    let res = await this.products!.find({
-      // find by matching keywords
-      $text: { $search: '"footwear" "Nike" Silica ' },
-      // pagination logic - UP
-      _id: { $gt: new ObjectId(options.uniqueKey) },
-    })
+    let res = await productCollection
+      .find({
+        // find by matching keywords
+        $text: { $search: '"footwear" "Nike" Silica ' },
+        // pagination logic - UP
+        _id: { $gt: new ObjectId(options.uniqueKey) },
+      })
       // required in the MongoDB Node driver to allow weighing results by # of keyword matches
       .project({ score: { $meta: "textScore" } })
       .sort({ score: { $meta: "textScore" } })

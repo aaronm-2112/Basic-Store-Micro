@@ -9,9 +9,14 @@ export abstract class ProductsRepo {
   protected productsCollection;
 
   constructor() {
-    this.productsCollection = client.getCollection(
-      dbConfig.productsCollectionName
-    );
+    try {
+      this.productsCollection = client.getCollection(
+        dbConfig.productsCollectionName
+      );
+    } catch (e) {
+      console.error(e);
+      throw new Error(e);
+    }
   }
 
   // create a product in the products database and get back a product ID

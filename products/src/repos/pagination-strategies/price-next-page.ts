@@ -1,21 +1,22 @@
 import { PaginationOptions } from "../pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
-import { ObjectId } from "mongodb";
+import { Collection, ObjectId } from "mongodb";
 
 export class PriceNextPage extends PaginationStrategy {
-  async paginate(options: PaginationOptions) {
-    let res = await this.products!.find({
-      // find by matching keywords
-      $text: { $search: '"footwear" "Nike" Silica ' },
-      // pagination logic - UP
-      $or: [
-        { price: { $gt: 8 } },
-        {
-          price: 8,
-          _id: { $gt: new ObjectId(options.uniqueKey) },
-        },
-      ],
-    })
+  async paginate(options: PaginationOptions, products: Collection<any>) {
+    let res = await products
+      .find({
+        // find by matching keywords
+        $text: { $search: '"footwear" "Nike" Silica ' },
+        // pagination logic - UP
+        $or: [
+          { price: { $gt: 8 } },
+          {
+            price: 8,
+            _id: { $gt: new ObjectId(options.uniqueKey) },
+          },
+        ],
+      })
       // sort logic
       .sort({
         price: -1,
@@ -25,7 +26,7 @@ export class PriceNextPage extends PaginationStrategy {
       // turn the limited results into an array
       .toArray();
 
-    let products = res.map((productDocumnent) => {
+    let productsArray = res.map((productDocumnent) => {
       return {
         name: productDocumnent.name,
         price: productDocumnent.price,
@@ -38,6 +39,6 @@ export class PriceNextPage extends PaginationStrategy {
       };
     });
 
-    return products;
+    return productsArray;
   }
 }
