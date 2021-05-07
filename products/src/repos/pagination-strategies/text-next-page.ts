@@ -5,7 +5,7 @@ import { PaginationOptions } from "../pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 import { ObjectId, Collection } from "mongodb";
 
-export class TextNextPagePagination extends PaginationStrategy {
+export class TextNextPage extends PaginationStrategy {
   async paginate(
     options: PaginationOptions,
     productCollection: Collection<any>
