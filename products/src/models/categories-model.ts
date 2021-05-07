@@ -9,4 +9,5 @@ export const enum categories {
   MUSIC = "music",
   EDUCATION = "education",
   ENTERTAINMENT = "entertainment",
+  CANDY = "candy",
 }

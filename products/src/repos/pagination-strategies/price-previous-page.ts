@@ -9,7 +9,7 @@ import { PaginationStrategy } from "./pagination-strategy-base";
 // extend the PaginationStrategy base class
 
 // implement paginate
-export class PricePreviousPagePagination extends PaginationStrategy {
+export class PricePreviousPage extends PaginationStrategy {
   //  write the pagination query to catch ties and retrieve results cheaper than the current price
   async paginate(
     options: PaginationOptions,

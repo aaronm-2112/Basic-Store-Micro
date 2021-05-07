@@ -6,7 +6,7 @@ import { sortMethods } from "./sort-methods";
 
 export interface PaginationOptions {
   // create a category that is a value of an enumerated type called Categories
-  categories: categories;
+  categories?: categories;
   // create a sortMethod that has to be one value of the SorthMethods enumerated type
   sortMethod: sortMethods;
   // create a sortKey that is a string, for sorting by price, or Date for sorting by date
