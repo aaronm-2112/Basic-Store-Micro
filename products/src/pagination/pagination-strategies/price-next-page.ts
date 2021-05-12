@@ -1,4 +1,4 @@
-import { PaginationOptions } from "../pagination-options";
+import { PaginationOptions } from "../helpers/pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 import { Collection, ObjectId } from "mongodb";
 
@@ -20,6 +20,7 @@ export class PriceNextPage extends PaginationStrategy {
       // sort logic
       .sort({
         price: -1,
+        _id: -1,
       })
       // limit results
       .limit(4)

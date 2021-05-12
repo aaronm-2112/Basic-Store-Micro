@@ -1,8 +1,8 @@
 import { client } from "../client";
 import { ProductModel } from "../models/product-model";
 import { dbConfig } from "../config/database-config";
-import { PaginationOptions } from "./pagination-options";
-import { PaginationStrategy } from "./pagination-strategies/pagination-strategy-base";
+import { PaginationOptions } from "../pagination/helpers/pagination-options";
+import { PaginationStrategy } from "../pagination/pagination-strategies/pagination-strategy-base";
 
 export abstract class ProductsRepo {
   // the products collection from the database

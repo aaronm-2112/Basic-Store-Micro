@@ -9,8 +9,8 @@ import {
 import { dbConfig } from "../../../config/database-config";
 import { ProductModel } from "../../../models/product-model";
 import { PaginationStrategy } from "../pagination-strategy-base";
-import { PaginationOptions } from "../../pagination-options";
-import { sortMethods } from "../../sort-methods";
+import { PaginationOptions } from "../../helpers/pagination-options";
+import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
 import { PricePreviousPage } from "../price-previous-page";
 

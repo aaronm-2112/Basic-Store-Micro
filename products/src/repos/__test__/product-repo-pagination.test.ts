@@ -7,11 +7,11 @@ import {
   connectToTestDatabase,
   runMigrationsOnTestDatabase,
 } from "../../test/setup";
-import { PaginationOptions } from "../pagination-options";
-import { PriceNextPage } from "../pagination-strategies/price-next-page";
-import { PricePreviousPagePagination } from "../pagination-strategies/price-previous-page";
-import { TextNextPagePagination } from "../pagination-strategies/text-next-page";
-import { TextPreviousPagePagination } from "../pagination-strategies/text-previous-page";
+import { PaginationOptions } from "../../pagination/helpers/pagination-options";
+import { PriceNextPage } from "../../pagination/pagination-strategies/price-next-page";
+import { PricePreviousPagePagination } from "../../pagination/pagination-strategies/price-previous-page";
+import { TextNextPagePagination } from "../../pagination/pagination-strategies/text-next-page";
+import { TextPreviousPagePagination } from "../../pagination/pagination-strategies/text-previous-page";
 import { ProductsRepo } from "../products-repo-base";
 import { ProductsRepoPagination } from "../products-repo-pagination";
 import { sortMethods } from "../sort-methods";

@@ -1,9 +1,11 @@
 // purpose:  implement the paginate method from the strategy base class. Goes to the next page.
 //           Sorting is done by text weight and amount of matches with the user's query.
 
-import { PaginationOptions } from "../pagination-options";
+import { PaginationOptions } from "../helpers/pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 import { ObjectId, Collection } from "mongodb";
+import PaginationResult from "../helpers/pagination-result";
+import { ProductModel } from "../../models/product-model";
 
 export class TextNextPage extends PaginationStrategy {
   async paginate(
@@ -26,7 +28,7 @@ export class TextNextPage extends PaginationStrategy {
       // turn the limited results into an array
       .toArray();
 
-    let products = res.map((productDocumnent) => {
+    let products: ProductModel[] = res.map((productDocumnent) => {
       return {
         name: productDocumnent.name,
         price: productDocumnent.price,
@@ -39,6 +41,12 @@ export class TextNextPage extends PaginationStrategy {
       };
     });
 
-    return products;
+    // create the pgaination result object
+    let results: PaginationResult = {
+      products,
+      textScore: undefined,
+    };
+
+    return results;
   }
 }

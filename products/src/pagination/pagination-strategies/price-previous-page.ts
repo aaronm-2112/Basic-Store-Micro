@@ -1,26 +1,25 @@
-// purpose: Using the given unique key and query go to the previous results weighed by matching words in the query.
+// purpose: Using the given price and unique key go to the previous set of search results
 
-import { Collection, ObjectId } from "mongodb";
+import { Collection } from "mongodb";
 import { categories } from "../../models/categories-model";
 import { ProductModel } from "../../models/product-model";
-import { PaginationOptions } from "../pagination-options";
+import { PaginationOptions } from "../helpers/pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 
 // extend the PaginationStrategy base class
-export class TextPreviousPagePagination extends PaginationStrategy {
-  // implement paginate
+
+// implement paginate
+export class PricePreviousPage extends PaginationStrategy {
+  //  write the pagination query to catch ties and retrieve results cheaper than the current price
   async paginate(
     options: PaginationOptions,
-    productCollection: Collection<any>
+    productsCollection: Collection<any>
   ) {
-    //      write the pagination query to search by category and brand name, if one is givem, as phrases
-    //      weigh the results by the number of matching words
-    //      sort the results by the weight
+    //      sort the results by increasing price
     //      limit the results to 4
-    //      turn the remaining results into an array
+    //      turn the results into an array
     //      map the results to an array of ProductModels
     //      return the products
-
     // return mock data so tests can run
     let pm: ProductModel = {
       name: "test",

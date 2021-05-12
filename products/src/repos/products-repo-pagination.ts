@@ -2,9 +2,9 @@
 //          pagination query stratgey object to the calling method. This will make dictating which
 //          query should be used for pagination simpler and more extensible.
 
-import { PaginationOptions } from "./pagination-options";
+import { PaginationOptions } from "../pagination/helpers/pagination-options";
 //import { PriceNextPage } from "./pagination-strategies/price-next-page";
-import { TextNextPagePagination } from "./pagination-strategies/text-next-page";
+import { TextNextPage } from "../pagination/pagination-strategies/text-next-page";
 import { ProductsRepo } from "./products-repo-base";
 
 // extend the products repo base class
@@ -29,7 +29,7 @@ export class ProductsRepoPagination extends ProductsRepo {
       //              check if page is 'next' or 'previous'
       //                  return the correct pagination strategy
 
-      let r = new TextNextPagePagination();
+      let r = new TextNextPage();
 
       return r;
     } catch (e) {
