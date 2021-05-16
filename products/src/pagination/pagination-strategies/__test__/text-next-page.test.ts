@@ -13,7 +13,6 @@ import { PaginationOptions } from "../../helpers/pagination-options";
 import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
 import { TextNextPage } from "../text-next-page";
-import { text } from "express";
 
 // Things to be tested:
 // 1. Potential query situations for paging to the previous page:
@@ -163,7 +162,7 @@ it("Returns a specific brand's products across all categories given a brand and 
     sortMethod: sortMethods.TEXT,
     uniqueKey: new ObjectId(undefined),
     sortKey: Infinity,
-    query: "Gushers",
+    query: "Gusher",
     brand: "Fruity",
     page: "next",
   };
@@ -187,7 +186,7 @@ it("Returns a specific brand's products across all categories given a brand and 
 
   // ensuere they exist
   expect(textScore).not.toBe(undefined);
-  expect(textScore?.length).toBe(3);
+  expect(textScore!.length).toBe(3);
 });
 
 it("Returns a specific brand's products in a single category given a particular brand, category, and keywords", async () => {
@@ -649,7 +648,7 @@ it("Returns the next set of products sorted by text relevancy when given a rando
 
 it("Pages through products correctly(as in never returning the same product twice) when dealing with two pages of ties", async () => {
   // insert page one of the data
-  let products: Array<ProductModel> = [
+  let pageOne: Array<ProductModel> = [
     {
       name: "Gusher",
       brand: "Fruity",
@@ -664,7 +663,7 @@ it("Pages through products correctly(as in never returning the same product twic
       },
     },
     {
-      name: "Gusher Blue Family",
+      name: "Gusher",
       brand: "Fruity",
       category: ["food"],
       price: 11.5,
@@ -677,7 +676,7 @@ it("Pages through products correctly(as in never returning the same product twic
       },
     },
     {
-      name: "Gusher Red",
+      name: "Gusher",
       brand: "Fruity",
       category: ["food"],
       price: 12.5,
@@ -690,7 +689,7 @@ it("Pages through products correctly(as in never returning the same product twic
       },
     },
     {
-      name: "Gusher Green Family Pack",
+      name: "Gusher",
       brand: "Fruity",
       category: ["food"],
       price: 12.5,
@@ -704,14 +703,118 @@ it("Pages through products correctly(as in never returning the same product twic
     },
   ];
 
-  await productsCollection!.insertMany(products);
+  await productsCollection!.insertMany(pageOne);
   // insert page two of the data
+  let pageTwo: Array<ProductModel> = [
+    {
+      name: "Gusher",
+      brand: "Fruity",
+      category: ["food"],
+      price: 10.05,
+      description: "Tasty",
+      imageURI: "/image",
+      quantity: 12,
+      user: {
+        username: "woo woo",
+        email: "woo@gmail.com",
+      },
+    },
+    {
+      name: "Gusher",
+      brand: "Fruity",
+      category: ["food"],
+      price: 11.5,
+      description: "Tasty",
+      imageURI: "/image",
+      quantity: 12,
+      user: {
+        username: "woo woo",
+        email: "woo@gmail.com",
+      },
+    },
+    {
+      name: "Gusher",
+      brand: "Fruity",
+      category: ["food"],
+      price: 12.5,
+      description: "Tasty",
+      imageURI: "/image",
+      quantity: 12,
+      user: {
+        username: "woo woo",
+        email: "woo@gmail.com",
+      },
+    },
+    {
+      name: "Gusher",
+      brand: "Fruity",
+      category: ["food"],
+      price: 12.5,
+      description: "Tasty",
+      imageURI: "/image",
+      quantity: 12,
+      user: {
+        username: "woo woo",
+        email: "woo@gmail.com",
+      },
+    },
+  ];
+  await productsCollection!.insertMany(pageTwo);
+
   // get the text scores of all inserted products in sorted order - from most to least relevant
+  let res = await productsCollection!
+    .find({
+      // find by matching keywords
+      $text: { $search: '"food" "Fruity" Gusher' },
+    })
+    // required in the MongoDB Node driver to allow weighing results by # of keyword matches
+    .project({ score: { $meta: "textScore" } })
+    .sort({ score: { $meta: "textScore" }, _id: 1 }) // id sorted ascending
+    // limit results
+    .limit(8)
+    // turn the limited results into an array
+    .toArray();
+
+  // extract the text score from the query results, sorted by text relevancy
+  let textScoreResults = res.map((result) => {
+    return { score: result.score, name: result.name, id: result._id };
+  });
+
+  // create the pagination options to get the first page of results
+  let pg: PaginationOptions = {
+    sortMethod: sortMethods.TEXT,
+    sortKey: Infinity, // the text score of the 4th item in the text score results
+    uniqueKey: new ObjectId(undefined),
+    categories: categories.FOOD,
+    page: "next",
+  };
+
+  // create the paginator
+  let paginator = new TextNextPage();
+
   // fetch the first page of products
-  // test that 4 products have been returned in correct order
+  let pageOneResults = await paginator.paginate(pg, productsCollection!);
+
+  // test that 4 products have been returned in the correct order
+  expect(pageOneResults.products.length).toBe(4);
+  expect(pageOneResults.products[0].id).toBe(textScoreResults[0].id);
+  expect(pageOneResults.products[1].id).toBe(textScoreResults[1].id);
+  expect(pageOneResults.products[2].id).toBe(textScoreResults[2].id);
+  expect(pageOneResults.products[3].id).toBe(textScoreResults[3].id);
+
+  // edit the pg options to get the second page
+  pg.sortKey = pageOneResults.textScore![3];
+  pg.uniqueKey = pageOneResults.products[3].id!;
+
   // use the last products sortKey and uniqueKey and request the second page of products
-  // test that there is no overlap in the result sets
-  // test that the ordering is correct
+  let pageTwoResults = await paginator.paginate(pg, productsCollection!);
+
+  // test that the second page has been returned in the correct order
+  expect(pageTwoResults.products.length).toBe(4);
+  expect(pageTwoResults.products[0].id).toBe(textScoreResults[4].id);
+  expect(pageTwoResults.products[1].id).toBe(textScoreResults[5].id);
+  expect(pageTwoResults.products[2].id).toBe(textScoreResults[6].id);
+  expect(pageTwoResults.products[3].id).toBe(textScoreResults[7].id);
 });
 
 it("Returns products that have multiple categories - and one that matches the desired category - sorted by text relevancy", async () => {});

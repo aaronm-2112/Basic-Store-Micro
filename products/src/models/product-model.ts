@@ -1,6 +1,9 @@
 // the product interface
 
+import { ObjectId } from "bson";
+
 export interface ProductModel {
+  id?: ObjectId;
   name: string;
   price: number;
   description: string;
