@@ -6,14 +6,42 @@ import { Collection } from "mongodb";
 import PaginationResult from "../helpers/pagination-result";
 
 export abstract class PaginationStrategy {
-  //  products: Collection<any>;
+  protected products: any[];
 
-  // constructor(productsCollection: Collection<any>) {
-  //   // this.products = productsCollection;
-  // }
+  constructor() {
+    this.products = [];
+  }
+
   // declare an abstract paginate method that takes a set of pagination options via the PaginationOptions struct
   abstract paginate(
     options: PaginationOptions,
     products: Collection<any>
-  ): Promise<PaginationResult>;
+  ): Promise<void>;
+
+  getPaginationResult(): PaginationResult {
+    let products: ProductModel[] = this.products.map((productDocumnent) => {
+      return {
+        name: productDocumnent.name,
+        price: productDocumnent.price,
+        description: productDocumnent.description,
+        imageURI: productDocumnent.imageURI,
+        category: productDocumnent.category,
+        quantity: productDocumnent.quantity,
+        brand: productDocumnent.brand,
+        user: productDocumnent.user,
+      };
+    });
+
+    let textScore = this.products.map((productDocument) => {
+      return productDocument.score;
+    });
+
+    // create the pgaination result object
+    let results: PaginationResult = {
+      products,
+      textScore,
+    };
+
+    return results;
+  }
 }

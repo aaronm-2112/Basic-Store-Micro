@@ -4,56 +4,51 @@
 import { PaginationOptions } from "../helpers/pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 import { ObjectId, Collection } from "mongodb";
-import PaginationResult from "../helpers/pagination-result";
-import { ProductModel } from "../../models/product-model";
 
 export class TextNextPage extends PaginationStrategy {
   async paginate(
     options: PaginationOptions,
     productCollection: Collection<any>
   ) {
-    let brand = options.brand!;
-    let query = options.query!;
+    let brand = options.brand;
+    let query = options.query;
+    let category = options.categories;
+
+    let finalQuery = ``;
+    if (brand) finalQuery += `"${brand}" `;
+    if (category) finalQuery += `"${category}" `;
+    if (query) finalQuery += query;
+    let sortKey: number = options.sortKey as number;
+    let id: ObjectId = options.uniqueKey;
+
+    console.log(finalQuery);
 
     // Write a basic 'featured' style query where we wiegh the words and their presence and sort by that instead
     let res = await productCollection
       .find({
-        // find by matching keywords
-        $text: { $search: `"${brand}" ${query}` },
-        // pagination logic - UP
-        // _id: { $gt: new ObjectId(options.uniqueKey) },
+        $text: { $search: `${finalQuery}` },
       })
       // required in the MongoDB Node driver to allow weighing results by # of keyword matches
       .project({ score: { $meta: "textScore" } })
-      .sort({ score: { $meta: "textScore" } })
+      .sort({ score: { $meta: "textScore" }, _id: -1 })
+      .filter({
+        input: "$score",
+        as: "score",
+        cond: {
+          score: { $gt: ["score", sortKey] },
+          _id: { $gt: ["$_id", id] },
+        },
+      })
       // limit results
       .limit(4)
       // turn the limited results into an array
       .toArray();
 
-    let products: ProductModel[] = res.map((productDocumnent) => {
-      return {
-        name: productDocumnent.name,
-        price: productDocumnent.price,
-        description: productDocumnent.description,
-        imageURI: productDocumnent.imageURI,
-        category: productDocumnent.category,
-        quantity: productDocumnent.quantity,
-        brand: productDocumnent.brand,
-        user: productDocumnent.user,
-      };
-    });
-
-    let textScore = res.map((productDocument) => {
-      return productDocument.score;
-    });
-
-    // create the pgaination result object
-    let results: PaginationResult = {
-      products,
-      textScore,
-    };
-
-    return results;
+    this.products = res;
   }
 }
+
+//  $or: [
+//   { score: { $gt: ["score", sortKey] } },
+//   { _id: { $lt: ["_id", id] } },
+// ],

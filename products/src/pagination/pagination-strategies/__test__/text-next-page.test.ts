@@ -13,6 +13,7 @@ import { PaginationOptions } from "../../helpers/pagination-options";
 import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
 import { TextNextPage } from "../text-next-page";
+import { text } from "express";
 
 // Things to be tested:
 // 1. Potential query situations for paging to the previous page:
@@ -157,10 +158,12 @@ it("Returns a specific brand's products across all categories given a brand and 
   // insert the products into the database
   await productsCollection!.insertMany(products);
 
+  // console.log(new ObjectId(9007199254740991)); MAx Positive Integer
+
   // create the pagination options object
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(9007199254740991),
     sortKey: Infinity,
     query: "Gusher",
     brand: "Fruity",
@@ -171,18 +174,23 @@ it("Returns a specific brand's products across all categories given a brand and 
   let paginator: PaginationStrategy = new TextNextPage();
 
   // fetch the products
-  let paginationResults = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+
+  let paginationResults = paginator.getPaginationResult();
 
   let paginationProducts = paginationResults.products;
+
+  console.log("The test, ", paginationProducts);
 
   // test the results
   expect(paginationProducts.length).toBe(3);
   expect(paginationProducts[0].name).toBe("Gusher Gusher");
-  expect(paginationProducts[1].name).toBe("Gusher Blue");
-  expect(paginationProducts[2].name).toBe("Gusher Red");
+  expect(paginationProducts[1].name).toBe("Gusher Red");
+  expect(paginationProducts[2].name).toBe("Gusher Blue");
 
   // get the text scores
   let textScore = paginationResults.textScore;
+  console.log(textScore);
 
   // ensuere they exist
   expect(textScore).not.toBe(undefined);
@@ -263,16 +271,20 @@ it("Returns a specific brand's products in a single category given a particular 
   // create the paginators
   let paginator: PaginationStrategy = new TextNextPage();
 
-  // fetch the products
-  let paginationResults = await paginator.paginate(pg, productsCollection!);
+  // paginate through the products
+  await paginator.paginate(pg, productsCollection!);
 
-  let paginationProducts = paginationResults.products;
+  // get the pagination results
+  let paginationResult = paginator.getPaginationResult();
+
+  // get the products from the pagination results
+  let paginationProducts = paginationResult.products;
 
   expect(paginationProducts.length).toBe(2);
   expect(paginationProducts[0].name).toBe("Gusher Gusher");
   expect(paginationProducts[1].name).toBe("Gusher Blue");
 
-  let textScore = paginationResults.textScore;
+  let textScore = paginationResult.textScore;
 
   expect(textScore).not.toBe(undefined);
   expect(textScore?.length).toBe(2);
@@ -351,9 +363,13 @@ it("Returns products across all brands in a specific category given keywords", a
   // create the paginators
   let paginator: PaginationStrategy = new TextNextPage();
 
-  // fetch the products
-  let paginationResults = await paginator.paginate(pg, productsCollection!);
+  // paginate throught the products
+  await paginator.paginate(pg, productsCollection!);
 
+  // get the pagination results
+  let paginationResults = paginator.getPaginationResult();
+
+  // extract the producs from the pagination results
   let paginationProducts = paginationResults.products;
 
   expect(paginationProducts.length).toBe(4);
@@ -437,17 +453,20 @@ it("Returns all products in a given category when not given keywords or brands",
   let paginator: PaginationStrategy = new TextNextPage();
 
   // fetch the pagination results
-  let paginationResult = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
 
-  // extract the products
+  let paginationResult = paginator.getPaginationResult();
+
   let paginationProducts = paginationResult.products;
 
-  expect(paginationProducts.length).toBe(2);
-  expect(paginationProducts[0].name).toBe("Gusher Gusher");
+  expect(paginationProducts.length).toBe(3);
+  expect(paginationProducts[0].name).toBe("Gusher Green");
   expect(paginationProducts[1].name).toBe("Gusher Blue");
 
   // extract the textScore of the results from paginationResults
   let textScore = paginationResult.textScore;
+
+  console.log("The results of score", textScore);
 
   expect(textScore).not.toBe(undefined);
   expect(textScore?.length).toBe(3);
@@ -467,7 +486,10 @@ it("Returns 0 products when searching for products in an empty database", async 
   };
 
   // fetch the results of the pagination request
-  let paginationResults = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+
+  // extract the results from the paginator
+  let paginationResults = paginator.getPaginationResult();
 
   // extract the products array
   let paginationProducts = paginationResults.products;
@@ -625,7 +647,12 @@ it("Returns the next set of products sorted by text relevancy when given a rando
     categories: categories.FOOD,
     page: "next",
   };
-  let paginationResult = await paginator.paginate(pg, productsCollection!);
+
+  // paginate through the products
+  await paginator.paginate(pg, productsCollection!);
+
+  // get the pagination results
+  let paginationResult = paginator.getPaginationResult();
 
   // extract the products from the pagination results
   let paginationProducts = paginationResult.products;
