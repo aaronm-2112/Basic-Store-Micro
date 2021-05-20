@@ -95,6 +95,28 @@ let products: Array<ProductModel> = [
   },
 ];
 
+it("Sets the next page of results as a property after paginating", async () => {
+  // insert products into the database
+  await productsCollection!.insertMany(products);
+
+  // create the pagination options
+  let pg: PaginationOptions = {
+    sortMethod: sortMethods.TEXT,
+    uniqueKey: new ObjectId(Infinity),
+    sortKey: Infinity,
+    query: "Gusher",
+    brand: "Fruity",
+    page: "next",
+  };
+
+  // create the paginator
+  let paginator: PaginationStrategy = new TextNextPage();
+
+  // assert that paginators
+
+  // paginate
+  await paginator.paginate(pg, productsCollection!);
+});
 // like hitting 'Enter' on a new query in the search bar - so give a searchKey of infinite
 // rationale: We want results sorted in order of highest text relevancy (which is reepresented as a number for each product)
 //            so the most relevant products are the ones closest to infinity.
@@ -180,17 +202,14 @@ it("Returns a specific brand's products across all categories given a brand and 
 
   let paginationProducts = paginationResults.products;
 
-  console.log("The test, ", paginationProducts);
-
   // test the results
   expect(paginationProducts.length).toBe(3);
   expect(paginationProducts[0].name).toBe("Gusher Gusher");
-  expect(paginationProducts[1].name).toBe("Gusher Red");
-  expect(paginationProducts[2].name).toBe("Gusher Blue");
+  expect(paginationProducts[1].name).toBe("Gusher Blue");
+  expect(paginationProducts[2].name).toBe("Gusher Red");
 
   // get the text scores
   let textScore = paginationResults.textScore;
-  console.log(textScore);
 
   // ensuere they exist
   expect(textScore).not.toBe(undefined);
@@ -261,7 +280,7 @@ it("Returns a specific brand's products in a single category given a particular 
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
     sortKey: Infinity,
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(Infinity),
     categories: categories.FOOD,
     query: "Gushers",
     brand: "Fruity",
@@ -354,7 +373,7 @@ it("Returns products across all brands in a specific category given keywords", a
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
     sortKey: Infinity,
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(Infinity),
     categories: categories.FOOD,
     query: "Gushers",
     page: "next",
@@ -444,7 +463,7 @@ it("Returns all products in a given category when not given keywords or brands",
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
     sortKey: Infinity,
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(Infinity),
     categories: categories.FOOD,
     page: "next",
   };
@@ -460,13 +479,12 @@ it("Returns all products in a given category when not given keywords or brands",
   let paginationProducts = paginationResult.products;
 
   expect(paginationProducts.length).toBe(3);
-  expect(paginationProducts[0].name).toBe("Gusher Green");
+  expect(paginationProducts[0].name).toBe("Gusher Gusher");
   expect(paginationProducts[1].name).toBe("Gusher Blue");
+  expect(paginationProducts[2].name).toBe("Gusher Green");
 
   // extract the textScore of the results from paginationResults
   let textScore = paginationResult.textScore;
-
-  console.log("The results of score", textScore);
 
   expect(textScore).not.toBe(undefined);
   expect(textScore?.length).toBe(3);
@@ -480,7 +498,7 @@ it("Returns 0 products when searching for products in an empty database", async 
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
     sortKey: Infinity,
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(Infinity),
     categories: categories.FOOD,
     page: "next",
   };
@@ -636,8 +654,6 @@ it("Returns the next set of products sorted by text relevancy when given a rando
     return { score: result.score, name: result.name, id: result._id };
   });
 
-  console.log("The text score results", textScoreResults);
-
   // fetch the products using the sortKey of the final item on the first page of fetched results (in this case product #4 is Gusher Red)
   let paginator = new TextNextPage();
   let pg: PaginationOptions = {
@@ -646,6 +662,8 @@ it("Returns the next set of products sorted by text relevancy when given a rando
     uniqueKey: new ObjectId(textScoreResults[3].id),
     categories: categories.FOOD,
     page: "next",
+    query: "Gusher family pack",
+    brand: "Fruity",
   };
 
   // paginate through the products
@@ -811,37 +829,41 @@ it("Pages through products correctly(as in never returning the same product twic
   let pg: PaginationOptions = {
     sortMethod: sortMethods.TEXT,
     sortKey: Infinity, // the text score of the 4th item in the text score results
-    uniqueKey: new ObjectId(undefined),
+    uniqueKey: new ObjectId(Infinity),
     categories: categories.FOOD,
     page: "next",
+    brand: "Fruity",
+    query: "Gusher",
   };
 
   // create the paginator
   let paginator = new TextNextPage();
 
   // fetch the first page of products
-  let pageOneResults = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let pageOneResults = paginator.getPaginationResult();
 
   // test that 4 products have been returned in the correct order
   expect(pageOneResults.products.length).toBe(4);
-  expect(pageOneResults.products[0].id).toBe(textScoreResults[0].id);
-  expect(pageOneResults.products[1].id).toBe(textScoreResults[1].id);
-  expect(pageOneResults.products[2].id).toBe(textScoreResults[2].id);
-  expect(pageOneResults.products[3].id).toBe(textScoreResults[3].id);
+  expect(pageOneResults.products[0].id).toEqual(textScoreResults[0].id);
+  expect(pageOneResults.products[1].id).toEqual(textScoreResults[1].id);
+  expect(pageOneResults.products[2].id).toEqual(textScoreResults[2].id);
+  expect(pageOneResults.products[3].id).toEqual(textScoreResults[3].id);
 
   // edit the pg options to get the second page
   pg.sortKey = pageOneResults.textScore![3];
   pg.uniqueKey = pageOneResults.products[3].id!;
 
   // use the last products sortKey and uniqueKey and request the second page of products
-  let pageTwoResults = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let pageTwoResults = paginator.getPaginationResult();
 
   // test that the second page has been returned in the correct order
   expect(pageTwoResults.products.length).toBe(4);
-  expect(pageTwoResults.products[0].id).toBe(textScoreResults[4].id);
-  expect(pageTwoResults.products[1].id).toBe(textScoreResults[5].id);
-  expect(pageTwoResults.products[2].id).toBe(textScoreResults[6].id);
-  expect(pageTwoResults.products[3].id).toBe(textScoreResults[7].id);
+  expect(pageTwoResults.products[0].id).toEqual(textScoreResults[4].id);
+  expect(pageTwoResults.products[1].id).toEqual(textScoreResults[5].id);
+  expect(pageTwoResults.products[2].id).toEqual(textScoreResults[6].id);
+  expect(pageTwoResults.products[3].id).toEqual(textScoreResults[7].id);
 });
 
 it("Returns products that have multiple categories - and one that matches the desired category - sorted by text relevancy", async () => {});

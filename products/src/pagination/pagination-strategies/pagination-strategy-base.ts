@@ -21,6 +21,7 @@ export abstract class PaginationStrategy {
   getPaginationResult(): PaginationResult {
     let products: ProductModel[] = this.products.map((productDocumnent) => {
       return {
+        id: productDocumnent._id,
         name: productDocumnent.name,
         price: productDocumnent.price,
         description: productDocumnent.description,
