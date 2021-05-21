@@ -13,7 +13,6 @@ import { PaginationOptions } from "../../helpers/pagination-options";
 import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
 import { TextNextPage } from "../text-next-page";
-import { text } from "express";
 
 // Things to be tested:
 // 1. Potential query situations for paging to the previous page:
@@ -95,7 +94,8 @@ let products: Array<ProductModel> = [
   },
 ];
 
-it("Sets the next page of results as a property after paginating", async () => {
+// test the contract that requires pagination to set its pagination results as a class property
+it("Ensures setProducts is called in the paginate method", async () => {
   // insert products into the database
   await productsCollection!.insertMany(products);
 
@@ -110,13 +110,45 @@ it("Sets the next page of results as a property after paginating", async () => {
   };
 
   // create the paginator
-  let paginator: PaginationStrategy = new TextNextPage();
+  let paginator: TextNextPage = new TextNextPage();
 
-  // assert that paginators
+  // create the paginator's spy -- use any to get around protected guard
+  const setProductsSpy = jest.spyOn(paginator as any, `setPageOfProducts`);
 
   // paginate
   await paginator.paginate(pg, productsCollection!);
+
+  // assert that the setProducts method was called in the paginate method
+  expect(setProductsSpy).toHaveBeenCalled();
 });
+
+it("Ensures buildPaginationQuery is called in the pagination method", async () => {
+  // insert products into the database
+  await productsCollection!.insertMany(products);
+
+  // create the pagination options
+  let pg: PaginationOptions = {
+    sortMethod: sortMethods.TEXT,
+    uniqueKey: new ObjectId(Infinity),
+    sortKey: Infinity,
+    query: "Gusher",
+    brand: "Fruity",
+    page: "next",
+  };
+
+  // create the paginator
+  let paginator: TextNextPage = new TextNextPage();
+
+  // create the paginator's spy -- use any to get around protected guard
+  const buildQuerySpy = jest.spyOn(paginator as any, `buildPaginationQuery`);
+
+  // paginate
+  await paginator.paginate(pg, productsCollection!);
+
+  // assert that the setProducts method was called in the paginate method
+  expect(buildQuerySpy).toHaveBeenCalled();
+});
+
 // like hitting 'Enter' on a new query in the search bar - so give a searchKey of infinite
 // rationale: We want results sorted in order of highest text relevancy (which is reepresented as a number for each product)
 //            so the most relevant products are the ones closest to infinity.

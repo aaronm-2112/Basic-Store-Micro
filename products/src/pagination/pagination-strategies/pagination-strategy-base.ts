@@ -6,7 +6,7 @@ import { Collection } from "mongodb";
 import PaginationResult from "../helpers/pagination-result";
 
 export abstract class PaginationStrategy {
-  protected products: any[];
+  private products: any[];
 
   constructor() {
     this.products = [];
@@ -44,5 +44,27 @@ export abstract class PaginationStrategy {
     };
 
     return results;
+  }
+
+  protected setPageOfProducts(products: any[]) {
+    this.products = products;
+  }
+
+  protected buildPaginationQuery(options: PaginationOptions): string {
+    // extract the brand, query, and category
+    let brand = options.brand;
+    let query = options.query;
+    let category = options.categories;
+
+    // declare the variable that will be formatted to encompass all of the query terms
+    let finalQuery = ``;
+    // if brand exists add it to the query as a phrase search
+    if (brand) finalQuery += `"${brand}" `;
+    // if category exists in the query add it to the query as a phrase search
+    if (category) finalQuery += `"${category}" `;
+    // if keywords exists in the user's query add it to the query as a keyword search
+    if (query) finalQuery += query;
+
+    return finalQuery;
   }
 }
