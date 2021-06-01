@@ -13,29 +13,42 @@ export class TextPreviousPage extends PaginationStrategy {
     options: PaginationOptions,
     productCollection: Collection<any>
   ) {
-    //      write the pagination query to search by category and brand name, if one is givem, as phrases
-    //      weigh the results by the number of matching words
+    let query = this.buildPaginationQuery(options);
+
+    // get the page of products that match the query
+    let pageOfProducts = await productCollection
+      // weigh the results by the number of matching words
+      .aggregate([
+        { $match: { $text: { $search: `${query}` } } },
+        // project the text score onto the document results
+        {
+          $project: {
+            score: { $meta: "textScore" },
+            description: true,
+            name: true,
+            price: true,
+            imageURI: true,
+            category: true,
+            brand: true,
+            user: true,
+            quantity: true,
+          },
+        },
+        // get products with greater text score values than the provided sortKey posseses
+        {
+          $match: {
+            score: { $gt: options.sortKey as number },
+          },
+        },
+      ])
+      .toArray();
+
     //      sort the results by the weight
     //      limit the results to 4
     //      turn the remaining results into an array
     //      map the results to an array of ProductModels
     //      return the products
 
-    // return mock data so tests can run
-    let pm: ProductModel = {
-      name: "test",
-      price: 12,
-      description: "test",
-      imageURI: "test",
-      category: [categories.FOOTWEAR],
-      quantity: 12,
-      brand: "Celery",
-      user: {
-        username: "test",
-        email: "test",
-      },
-    };
-
-    return [pm];
+    this.setPageOfProducts(pageOfProducts);
   }
 }

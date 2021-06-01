@@ -14,19 +14,6 @@ import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
 import { TextNextPage } from "../text-next-page";
 
-// Things to be tested:
-// 1. Potential query situations for paging to the previous page:
-//  Query with a brand, keywords, and across all categories                     []
-//  Query by brand and a specific category                                      []
-//  Query by category and no brand with keywords                                []
-//  Query by a category with no brand and no keywords                           []
-
-// 2. Other general things:
-//  Ensure the pagination returns 0 results on empty database                   []
-//  Ensure the pagination handles ties                                          []
-//  Ensure the pagination handles products with multiple categories correctly   []
-//  Ensure the pagination returns the next set of results given a unique key    []
-
 // a collection object used in the strategies
 let productsCollection: Collection<any> | undefined;
 
