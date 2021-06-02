@@ -41,13 +41,10 @@ export class TextPreviousPage extends PaginationStrategy {
           },
         },
       ])
+      // limit the results to 4
+      .limit(4)
+      // turn the remaining results into an array
       .toArray();
-
-    //      sort the results by the weight
-    //      limit the results to 4
-    //      turn the remaining results into an array
-    //      map the results to an array of ProductModels
-    //      return the products
 
     this.setPageOfProducts(pageOfProducts);
   }

@@ -1,5 +1,15 @@
 // Purpose: Test paginating to the 'next' page when sorting by text relevance
 
+/* 
+  Note: Many of the following tests have a dependency between the pagination method and the test
+  Why: Text scoring logic is duplicated in the test and pagination method but never encapsulated in a function or object
+       if one chnages the tests breaks.
+  Solution: One possible solution is to make an object that builds and returns
+            objects used in the aggregation pipeline utilized by paginate. This would centralize any text score assigning, sorting, etc
+            to one place and make the tests less brittle. I won't do that because this isn't the focus of the project, and it would take time.
+
+*/
+
 import { Collection, ObjectId } from "mongodb";
 import { client } from "../../../client";
 import {
