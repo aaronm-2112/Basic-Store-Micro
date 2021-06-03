@@ -13,7 +13,6 @@ import { PaginationStrategy } from "../pagination-strategy-base";
 import { PaginationOptions } from "../../helpers/pagination-options";
 import { sortMethods } from "../../../repos/sort-methods";
 import { categories } from "../../../models/categories-model";
-import { TextNextPagePagination } from "../text-next-page";
 
 // a collection object used in the strategies
 let productsCollection: Collection<any> | undefined;
@@ -103,7 +102,8 @@ it("Gets a price of 0 retrieves the first page of products sorted by price from 
   };
 
   // retrieve the products
-  let result = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let result = paginator.getPaginationResult().products;
 
   // test that the products are in the right order
   expect(result[0].price).toBe(10.05);
@@ -124,7 +124,7 @@ it("Gets a random price and retrieves the correct page of products sorted by pri
   let pg: PaginationOptions = {
     sortMethod: sortMethods.PRICE_LOW_TO_HIGH,
     categories: categories.FOOD,
-    sortKey: 12.5,
+    sortKey: 11.5,
     uniqueKey: new ObjectId(),
     query: "Gushers",
     brand: "Fruity",
@@ -132,7 +132,8 @@ it("Gets a random price and retrieves the correct page of products sorted by pri
   };
 
   // retrieve the last two products using the paginator
-  let result = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let result = paginator.getPaginationResult().products;
 
   // test that the right products are returned in the right order
   expect(result[0].price).toBe(12.5);
@@ -156,7 +157,8 @@ it("Retrieves zero products when asked to retrieve products from an empty databa
   };
 
   // fetch products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // test that none are returned
   expect(results.length).toBe(0);
@@ -219,6 +221,8 @@ it("Gets a brand and category, and only returns products of that brand and in th
     },
   ];
 
+  await productsCollection!.insertMany(products);
+
   // create the pagination options
   // create the pagination options - search by brand of Fruity, category of Food, and page next
   let pg: PaginationOptions = {
@@ -232,10 +236,11 @@ it("Gets a brand and category, and only returns products of that brand and in th
   };
 
   // create the paginator
-  let paginator = new TextNextPagePagination();
+  let paginator = new PriceNextPage();
 
   // retrieve products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // ensure only products of the correct brand and category are returned
   expect(results.length).toBe(3);
@@ -301,6 +306,8 @@ it("Gets a category, and only returns products in that category ordered by price
     },
   ];
 
+  await productsCollection!.insertMany(products);
+
   // create the paginaiton options
   let pg: PaginationOptions = {
     sortMethod: sortMethods.PRICE_LOW_TO_HIGH,
@@ -311,10 +318,11 @@ it("Gets a category, and only returns products in that category ordered by price
     page: "next",
   };
   // create the paginator
-  let paginator = new TextNextPagePagination();
+  let paginator = new PriceNextPage();
 
   // retrieve products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // ensure only products of the correct category are returned - of any brand
   expect(results.length).toBe(3);

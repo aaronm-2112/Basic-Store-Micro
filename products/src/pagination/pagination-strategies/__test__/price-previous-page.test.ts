@@ -112,7 +112,8 @@ it("Gets a price and returns a page of products with a lower price", async () =>
   };
 
   // retrieve the products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // test that the products are in the right order
   expect(results.length).toBe(2);
@@ -136,7 +137,8 @@ it("Retrieves zero products when asked to retrieve products from an empty databa
   };
 
   // fetch products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // test that none are returned
   expect(results.length).toBe(0);
@@ -212,13 +214,14 @@ it("Gets a brand, category, and price, then returns products in that category an
     },
   ];
 
-  // create the pagination options
+  await productsCollection!.insertMany(products);
+
   // create the pagination options - search by brand of Fruity, category of Food, and page next
   let pg: PaginationOptions = {
     sortMethod: sortMethods.PRICE_LOW_TO_HIGH,
     categories: categories.FOOD,
     sortKey: 12.5,
-    uniqueKey: new ObjectId(),
+    uniqueKey: new ObjectId(Infinity),
     query: "Gushers",
     brand: "Fruity",
     page: "previous",
@@ -228,7 +231,8 @@ it("Gets a brand, category, and price, then returns products in that category an
   let paginator = new PricePreviousPage();
 
   // retrieve products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // ensure only products of the correct brand and category are returned
   expect(results.length).toBe(1);
@@ -308,7 +312,8 @@ it("Gets a category, and only returns products in that category ordered by price
   let paginator = new PricePreviousPage();
 
   // retrieve products
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // ensure only products of the correct category are returned - of any brand
   expect(results.length).toBe(3);
@@ -385,18 +390,19 @@ it("Returns products containing multiple categories that are cheaper than the gi
     sortMethod: sortMethods.PRICE_LOW_TO_HIGH,
     categories: categories.CANDY,
     sortKey: 12.5,
-    uniqueKey: new ObjectId(),
+    uniqueKey: new ObjectId(Infinity),
     query: "Gushers Pez",
     page: "previous",
   };
 
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // ensure that we have three items and they are only in the candy category
   expect(results.length).toBe(3);
-  expect(results[1].name).toBe("Gusher");
-  expect(results[2].name).toBe("Pez Dispenser");
-  expect(results[3].name).toBe("Gusher Blue");
+  expect(results[0].name).toBe("Gusher");
+  expect(results[1].name).toBe("Pez Dispenser");
+  expect(results[2].name).toBe("Gusher Blue");
 });
 
 it("Returns products across all categories when given a brand and keywords", async () => {
@@ -472,7 +478,8 @@ it("Returns products across all categories when given a brand and keywords", asy
   let paginator: PaginationStrategy = new PricePreviousPage();
 
   // paginate
-  let results = await paginator.paginate(pg, productsCollection!);
+  await paginator.paginate(pg, productsCollection!);
+  let results = paginator.getPaginationResult().products;
 
   // test the results
   expect(results.length).toBe(4);

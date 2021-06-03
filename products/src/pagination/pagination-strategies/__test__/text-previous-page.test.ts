@@ -418,7 +418,7 @@ it("Returns products with a higher text weight than provided across all brands t
   expect(pageOneResults.products.length).toBe(4);
 });
 
-it("Paginates to the first page of results from the second page of results", async () => {
+it("Paginates to the first page of results from the second page of results with tie breaking", async () => {
   // insert page one of the data
   let products: Array<ProductModel> = [
     {
@@ -554,8 +554,6 @@ it("Paginates to the first page of results from the second page of results", asy
     return { score: result.score, name: result.name, id: result._id };
   });
 
-  console.log(textScoreResults);
-
   // create the pagination options object
   let pg: PaginationOptions = {
     sortKey: 2.85,
@@ -566,6 +564,11 @@ it("Paginates to the first page of results from the second page of results", asy
     categories: categories.FOOD,
     uniqueKey: textScoreResults[4].id, // first item on the second page of results
   };
-});
 
-it("Handles ties in text weight when paginating from page two to page one of results ", async () => {});
+  let paginator = new TextPreviousPage();
+
+  await paginator.paginate(pg, productsCollection!);
+  let pageOneResults = paginator.getPaginationResult();
+
+  expect(pageOneResults.products.length).toBe(4);
+});

@@ -1,8 +1,6 @@
 // purpose: Using the given price and unique key go to the previous set of search results
 
 import { Collection } from "mongodb";
-import { categories } from "../../models/categories-model";
-import { ProductModel } from "../../models/product-model";
 import { PaginationOptions } from "../helpers/pagination-options";
 import { PaginationStrategy } from "./pagination-strategy-base";
 
@@ -15,26 +13,35 @@ export class PricePreviousPage extends PaginationStrategy {
     options: PaginationOptions,
     productsCollection: Collection<any>
   ) {
-    //      sort the results by increasing price
-    //      limit the results to 4
-    //      turn the results into an array
-    //      map the results to an array of ProductModels
-    //      return the products
-    // return mock data so tests can run
-    let pm: ProductModel = {
-      name: "test",
-      price: 12,
-      description: "test",
-      imageURI: "test",
-      category: [categories.FOOTWEAR],
-      quantity: 12,
-      brand: "Celery",
-      user: {
-        username: "test",
-        email: "test",
-      },
-    };
+    let query = this.buildPaginationQuery(options);
 
-    return [pm];
+    let page = await productsCollection
+      .find({
+        // find by matching keywords
+        $text: { $search: `${query}` },
+        // pagination logic - down
+        $or: [
+          { price: { $lt: options.sortKey } },
+          {
+            $and: [
+              {
+                price: options.sortKey,
+                _id: { $lt: options.uniqueKey },
+              },
+            ],
+          },
+        ],
+      })
+      // sort logic
+      .sort({
+        price: 1,
+        _id: -1,
+      })
+      // limit results
+      .limit(4)
+      // turn the limited results into an array
+      .toArray();
+
+    this.setPageOfProducts(page);
   }
 }

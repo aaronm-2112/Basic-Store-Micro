@@ -34,10 +34,22 @@ export class TextPreviousPage extends PaginationStrategy {
             quantity: true,
           },
         },
-        // get products with greater text score values than the provided sortKey posseses
+        // sort by text score ( descending ) and _id ( ascending )
+        { $sort: { score: { $meta: "textScore" }, _id: 1 } },
+        // get products with greater text score values than the provided sortKey posseses and handle ties with the objectId
         {
           $match: {
-            score: { $gt: options.sortKey as number },
+            $or: [
+              { score: { $gt: options.sortKey as number } },
+              {
+                $and: [
+                  {
+                    score: options.sortKey as number,
+                    _id: { $lt: options.uniqueKey },
+                  },
+                ],
+              },
+            ],
           },
         },
       ])
