@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
-import { query } from "express-validator";
+import { query, validationResult } from "express-validator";
+import { StatusCodes } from "./helpers/status-codes";
 
 // create a router for the GET "/api/v1/products" route
 let router = express.Router();
@@ -7,7 +8,7 @@ let router = express.Router();
 // make the router activate on the "/api/v1/products" route & define the request and response
 router.get(
   "/api/products",
-  query(["sortMethod"]),
+  [query("sortMethod").notEmpty().isInt()],
   async (req: Request, res: Response) => {
     //  validate the request query parameters
     //      category needs to be defined and valid - when a user wants to search for a product without specifying category, we use "All"
@@ -17,7 +18,11 @@ router.get(
     //      page needs to be defined and valid. Valid values are "next" and "previous"
     //      uniqueKey needs to be defined and a valid mongodb objectID
     //  check if validation failed
-    //     throw a 400 error -- this will be caught by the common error handler
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      //     throw a client error -- this will be caught by the common error handler
+      return res.sendStatus(StatusCodes.CLIENT_ERROR);
+    }
     //  scan the query string
     //      for each word check if it is a verified brand
     //          if so remove that word from the query and place in a brand variable
@@ -26,7 +31,7 @@ router.get(
     //  create the product repository
     //  call the paginate method on the product repository with the pagination options struct
     //  return the product results to the client
-    res.send(400);
+    res.sendStatus(200);
   }
 );
 
