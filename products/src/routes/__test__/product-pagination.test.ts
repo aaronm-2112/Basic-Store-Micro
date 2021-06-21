@@ -55,7 +55,7 @@ it("Sort method text - Throws an error when given an empty string for the sort m
     .expect(StatusCodes.CLIENT_ERROR);
 });
 
-it("Sort method text - Throws an error when given a number for the sort method query parameter", async () => {
+it("Sort method text - Throws an error when given an invalid value for the sort method query parameter", async () => {
   // create the wrong set of query paramaters to pass in for sorting by text
   let sortMethod = "1";
   let page = "next";
@@ -72,28 +72,136 @@ it("Sort method text - Throws an error when given a number for the sort method q
     .expect(StatusCodes.CLIENT_ERROR);
 });
 
-it("Sort method text - Creates the pagination repository given the correct query paramaters", async () => {
-  // create the spy
-  let paginationSpy = jest.spyOn(
-    ProductsRepoPagination as any,
-    "createPaginationStrategy"
-  );
+it("Sort method text - Returns a 200 when given a white listed value for the sortMethod query parameter", async () => {
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = new ObjectId(0);
+  let category = "food";
+  let query = "Gushers";
 
   // run the SUT
-  await request(app).get("/api/products?").send().expect(200);
-
-  // ensure the SUT called the createPagination method
-  expect(paginationSpy).toHaveBeenCalled();
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.OK);
 });
 
-it("Sort method text - Retrieves the correct products when given valid query parameters", async () => {
-  // request the first set of products
-  let response = await request(app).get("/api/products?").send().expect(200);
-  let responseBody = response.body;
+it("Page text - Throws an error when given an invalid number for the page query parameter", async () => {
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = new ObjectId(0);
+  let category = "food";
+  let query = "Gushers";
 
-  // ensure we get matching products
-
-  // request the next page of products using the largest ObjectID as the key
-
-  // ensure we get the correct products
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR);
 });
+
+it("Page text - Returns a 200 when given a white listed value for the page query parameter", async () => {
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = new ObjectId(0);
+  let category = "food";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.OK);
+});
+
+it("UniqueKey text - Returns a 400 when given an invalid Mongo ObjectId to the uniqueKey query parameter", async () => {
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = "i";
+  let category = "food";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR);
+});
+
+it("UniqueKey text - Returns a 200 when given a valid Mongo ObjectId to the uniqueKey query parameter", async () => {
+  // create a valid mongo ObjectId
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "food";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.OK);
+});
+
+it("Query text - Returns a 400 when given an empty string for the query parameter", async () => {
+  // create a valid mongo ObjectId
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let sortKey = 0;
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "food";
+  let query = "";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR);
+});
+
+// it("Sort method text - Creates the pagination repository given the correct query paramaters", async () => {
+//   // create the spy
+//   let paginationSpy = jest.spyOn(
+//     ProductsRepoPagination as any,
+//     "createPaginationStrategy"
+//   );
+
+//   // run the SUT
+//   await request(app).get("/api/products?").send().expect(200);
+
+//   // ensure the SUT called the createPagination method
+//   expect(paginationSpy).toHaveBeenCalled();
+// });
+
+// it("Sort method text - Retrieves the correct products when given valid query parameters", async () => {
+//   // request the first set of products
+//   let response = await request(app).get("/api/products?").send().expect(200);
+//   let responseBody = response.body;
+
+//   // ensure we get matching products
+
+//   // request the next page of products using the largest ObjectID as the key
+
+//   // ensure we get the correct products
+// });
