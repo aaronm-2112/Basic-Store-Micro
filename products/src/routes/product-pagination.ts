@@ -59,12 +59,42 @@ router.get(
         return Promise.resolve();
       }
 
+      // query is invalid send an error
       return Promise.reject(
         "If query is provided it cannot be an empty string"
       );
     }),
-    // sortKey can be undefined when performing a sort by text. sortKey needs to be defined for price and date and be valid in those instances
-    query("sortKey").custom((key) => {}),
+    //  sortKey needs to be defined for price, text, and date and be valid in those instances
+    query(["sortKey", "sortMethod"]).custom((key, method) => {
+      // get the sortMethod value
+      let sortMethod = method.req.query!["sortMethod"];
+      console.log("Sort method is:", sortMethod);
+
+      // check if the sortMethod is undefined
+      if (sortMethod == undefined) {
+        return Promise.reject(
+          "The sort key is invalid because the sorting method hasn't been defined."
+        );
+      }
+
+      // check if key is defined
+      if (key === undefined) {
+        return Promise.reject("The sort key needs to be defined");
+      }
+      console.log("Key is: ", key);
+
+      // convert key into a number
+      let keyToNumber = Number(key);
+
+      // check if sortKey is a valid number or undefined
+      if (isNaN(keyToNumber)) {
+        return Promise.reject(
+          "The sort key needs to be a number when searching by price or text"
+        );
+      }
+
+      return Promise.resolve();
+    }),
   ],
   async (req: Request, res: Response) => {
     //  validate the request query parameters
@@ -86,7 +116,7 @@ router.get(
     //  create the product repository
     //  call the paginate method on the product repository with the pagination options struct
     //  return the product results to the client
-    res.sendStatus(StatusCodes.OK);
+    return res.sendStatus(StatusCodes.OK);
   }
 );
 

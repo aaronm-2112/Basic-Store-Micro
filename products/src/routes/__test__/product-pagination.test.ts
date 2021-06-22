@@ -180,6 +180,46 @@ it("Query text - Returns a 400 when given an empty string for the query paramete
     .expect(StatusCodes.CLIENT_ERROR);
 });
 
+it("sortKey text - Returns a 400 when the sortKey query parameter is undefined", async () => {
+  // create a valid mongo ObjectId
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "food";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR);
+});
+
+it("sortKey text - Returns a 400 when the sortKey is not a number", async () => {
+  // create the query parameters (all are valid except sortkey)
+
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let page = "next";
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "food";
+  let query = "Gushers";
+  let sortKey = "abcd";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&uniqueKey=${uniqueKey}&category=${category}&query=${query}&sortKey=${sortKey}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR); // expect a 400
+});
+
 // it("Sort method text - Creates the pagination repository given the correct query paramaters", async () => {
 //   // create the spy
 //   let paginationSpy = jest.spyOn(
