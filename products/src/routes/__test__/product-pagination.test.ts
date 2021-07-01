@@ -239,7 +239,24 @@ it("sortKey text - Returns a 200 when given a valid sortKey -- at the moment a v
     .expect(StatusCodes.OK); // expect a 400
 });
 
-it("category text - Returns a 400 when given an invalid category", async () => {});
+it("category text - Returns a 400 when given an invalid category", async () => {
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let sortKey = 0;
+  let page = "next";
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "chilis";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&uniqueKey=${uniqueKey}&category=${category}&query=${query}&sortKey=${sortKey}`
+    )
+    .expect(StatusCodes.CLIENT_ERROR); // expect a 400
+});
 
 // it("Sort method text - Creates the pagination repository given the correct query paramaters", async () => {
 //   // create the spy
