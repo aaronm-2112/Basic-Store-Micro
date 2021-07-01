@@ -21,7 +21,7 @@ beforeAll(async () => {
   pr = new ProductsRepoPagination();
 });
 
-it("Sort method text - Throws an error when not given sorth method as a query parameters", async () => {
+it("Sort method text - Throws an error when not given sort method as a query parameters", async () => {
   // create the wrong set of query paramaters to pass in for sorting by text
   let sortMethod = "text";
   let page = "next";
@@ -76,7 +76,7 @@ it("Sort method text - Returns a 200 when given a white listed value for the sor
   // create the wrong set of query paramaters to pass in for sorting by text
   let sortMethod = "price: low - high";
   let page = "next";
-  let sortKey = 0;
+  let sortKey = 24;
   let uniqueKey = new ObjectId(0);
   let category = "food";
   let query = "Gushers";
@@ -84,7 +84,7 @@ it("Sort method text - Returns a 200 when given a white listed value for the sor
   // run the SUT
   await request(app)
     .get(
-      `/api/products?sortMethod=${sortMethod}&page=${page}&sortKey=${sortKey}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
+      `/api/products?sortKey=${sortKey}&sortMethod=${sortMethod}&page=${page}&uniqueKey=${uniqueKey}&category=${category}&query=${query}`
     )
     .expect(StatusCodes.OK);
 });
@@ -219,6 +219,27 @@ it("sortKey text - Returns a 400 when the sortKey is not a number", async () => 
     )
     .expect(StatusCodes.CLIENT_ERROR); // expect a 400
 });
+
+it("sortKey text - Returns a 200 when given a valid sortKey -- at the moment a valid sortKey is a number - and valid sortMethod", async () => {
+  let objectId = new ObjectId("timtamtomted");
+
+  // create the wrong set of query paramaters to pass in for sorting by text
+  let sortMethod = "price: low - high";
+  let sortKey = 0;
+  let page = "next";
+  let uniqueKey = objectId.toHexString(); // pass in the hex string value
+  let category = "food";
+  let query = "Gushers";
+
+  // run the SUT
+  await request(app)
+    .get(
+      `/api/products?sortMethod=${sortMethod}&page=${page}&uniqueKey=${uniqueKey}&category=${category}&query=${query}&sortKey=${sortKey}`
+    )
+    .expect(StatusCodes.OK); // expect a 400
+});
+
+it("category text - Returns a 400 when given an invalid category", async () => {});
 
 // it("Sort method text - Creates the pagination repository given the correct query paramaters", async () => {
 //   // create the spy

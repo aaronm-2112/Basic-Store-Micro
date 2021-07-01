@@ -1,5 +1,5 @@
 import express, { Request, Response } from "express";
-import { query, validationResult } from "express-validator";
+import { query, validationResult, CustomValidator } from "express-validator";
 import { ObjectId } from "mongodb";
 import { sortMethods } from "../repos/sort-methods";
 import { StatusCodes } from "./helpers/status-codes";
@@ -7,23 +7,26 @@ import { StatusCodes } from "./helpers/status-codes";
 // create a router for the GET "/api/v1/products" route
 let router = express.Router();
 
+// custom validator for white listing the sortMethod query parameter
+function validateSortMethod(method: string): Promise<string> {
+  // check if sortMethod matches at least one possible sort methods in the whitelist
+  if (
+    method == sortMethods.DATE ||
+    method == sortMethods.PRICE_LOW_TO_HIGH ||
+    method == sortMethods.TEXT
+  ) {
+    return Promise.resolve("Valid sort method");
+  }
+
+  return Promise.reject("Not a valid sort method");
+}
+
 // make the router activate on the "/api/v1/products" route & define the request and response
 router.get(
   "/api/products",
   [
     // sortMethod needs to be defined and valid - sorting options are: price, text, date; text is the default
-    query("sortMethod").custom((sortMethod) => {
-      // check if sortMethod matches at least one possible sort methods in the whitelist
-      if (
-        sortMethod == sortMethods.DATE ||
-        sortMethod == sortMethods.PRICE_LOW_TO_HIGH ||
-        sortMethod == sortMethods.TEXT
-      ) {
-        return Promise.resolve("Valid value");
-      }
-
-      return Promise.reject("Not a valid sort method");
-    }),
+    query("sortMethod").custom(validateSortMethod),
     // page needs to be defined and valid. Valid values are "next" and "previous"
     query("page").custom((page) => {
       // check that page matches the whitelist of page values
@@ -65,23 +68,25 @@ router.get(
       );
     }),
     //  sortKey needs to be defined for price, text, and date and be valid in those instances
-    query(["sortKey", "sortMethod"]).custom((key, method) => {
+    //  TODO: Refactor as part of last red-green-refactor step to remove duplication and allow for additional sortMethods to be validated.
+    //       I would go about this by creating a Validator interface with validators for each sortMethod-sortKey combo.
+    //       Then I would create a Validation class with a factory method to choose the validator by the sortMethod. This validator would get its validation
+    //       work delegated to it in a 'validateSortKey' method in the Validation class.
+    query(["sortKey"]).custom(async (key, fields) => {
       // get the sortMethod value
-      let sortMethod = method.req.query!["sortMethod"];
-      console.log("Sort method is:", sortMethod);
+      let sortMethod = fields.req.query!["sortMethod"];
 
-      // check if the sortMethod is undefined
-      if (sortMethod == undefined) {
-        return Promise.reject(
-          "The sort key is invalid because the sorting method hasn't been defined."
-        );
+      // validate the sort method
+      try {
+        await validateSortMethod(sortMethod);
+      } catch (e) {
+        return Promise.reject(e);
       }
 
       // check if key is defined
       if (key === undefined) {
         return Promise.reject("The sort key needs to be defined");
       }
-      console.log("Key is: ", key);
 
       // convert key into a number
       let keyToNumber = Number(key);
@@ -95,14 +100,14 @@ router.get(
 
       return Promise.resolve();
     }),
+    // category needs to be defined and valid - when a user wants to search for a product without specifying category, we use "All"
   ],
   async (req: Request, res: Response) => {
     //  validate the request query parameters
-    //      category needs to be defined and valid - when a user wants to search for a product without specifying category, we use "All"
 
     //  check if validation failed
     const errors = validationResult(req).array();
-    console.log(errors);
+    // if (errors.length > 0) console.log(errors);
 
     if (errors.length) {
       //     throw a client error -- this will be caught by the common error handler
