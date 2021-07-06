@@ -38,9 +38,11 @@ beforeEach(async () => {
   const collections = await client.getDatabase()!.collections();
 
   for (let collection of collections) {
-    await collection.deleteMany({});
-    // recreate the index after cleaning our slate
-    await collection.reIndex();
+    if (collection.collectionName !== "categories") {
+      await collection.deleteMany({});
+      // recreate the index after cleaning our slate
+      await collection.reIndex();
+    }
   }
 });
 

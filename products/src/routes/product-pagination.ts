@@ -4,7 +4,6 @@ import { ObjectId } from "mongodb";
 import { sortMethods } from "../repos/sort-methods";
 import { StatusCodes } from "./helpers/status-codes";
 import { client } from "../client";
-import { categories } from "../models/categories-model";
 
 // create a router for the GET "/api/v1/products" route
 let router = express.Router();
@@ -104,17 +103,21 @@ router.get(
     }),
     // category needs to be defined and valid - when a user wants to search for a product without specifying category, we use "All"
     query("category").custom(async (category) => {
-      console.log(category);
+      // get the categories using the database client
       let categoriesCollection = client.getCollection("categories");
-      let categories = await categoriesCollection!.find({}).toArray();
 
-      console.log(categories);
+      // return the matching category from the categories collection
+      let categories = await categoriesCollection!
+        .find({ category: category })
+        .toArray();
 
-      if (categories.length > 0) {
-        return Promise.resolve("Valid category");
+      // if there is no match found throw an error
+      if (!categories.length) {
+        return Promise.reject("Invalid category");
       }
 
-      return Promise.reject("Invalid category");
+      // resolve since the user client sent a valid category
+      return Promise.resolve("Valid category");
     }),
   ],
   async (req: Request, res: Response) => {
