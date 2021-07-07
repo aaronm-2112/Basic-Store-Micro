@@ -10,6 +10,10 @@ import { app } from "../../app";
 import { ProductsRepoPagination } from "../../repos/products-repo-pagination";
 import { ObjectId } from "bson";
 import { StatusCodes } from "../helpers/status-codes";
+// import { validatePage } from "../helpers/validation";
+
+// // stub the validators
+// jest.mock("validatePage");
 
 // the repository used in the tests
 let pr: ProductsRepo;
@@ -29,6 +33,8 @@ it("Sort method text - Throws an error when not given sort method as a query par
   let uniqueKey = new ObjectId(0);
   let category = "food";
   let query = "Gushers";
+
+  // stub the validation methods used at the route
 
   // run the SUT
   await request(app)
